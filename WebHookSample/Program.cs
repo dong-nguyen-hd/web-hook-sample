@@ -55,6 +55,9 @@ try
     }
 
     builder.Services.AddResponseCaching();
+    builder.Services.AddCustomizeSwagger();
+    builder.Services.AddEndpointsApiExplorer(); // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddSwaggerGen();
     builder.Services.AddDbContext<CoreContext>(opts =>
     {
         opts.UseNpgsql(SystemGlobal.PostgresqlConnectionString, o =>
@@ -81,6 +84,13 @@ try
     #region Configure the HTTP request pipeline.
     var app = builder.Build();
     app.UseStaticFiles();
+
+    if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
     app.UseSerilogRequestLogging();
     if (app.Environment.IsProduction())
         app.UseHttpsRedirection();
