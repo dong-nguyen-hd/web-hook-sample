@@ -1,6 +1,6 @@
 ﻿namespace WebHookSample.Resources.SystemData;
 
-public static class ResponseMessage
+public sealed class ResponseMessage
 {
     #region Property
     public static Dictionary<string, string>? Values { get; set; }
