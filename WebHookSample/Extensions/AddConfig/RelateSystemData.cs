@@ -15,7 +15,7 @@ public static class RelateSystemData
         SystemGlobal.PostgresqlConnectionString = configuration.GetConnectionString("PostgreSQL");
 
         // Gán giá trị cho phần CO6
-        configuration.GetSection(nameof(Information)).Get<Information>();
+        configuration.GetSection(nameof(SystemInformation)).Get<SystemInformation>();
 
         // Gán giá trị cho phần CacheConfig
         configuration.GetSection(nameof(CacheConfig)).Get<CacheConfig>();
