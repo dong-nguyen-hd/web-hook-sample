@@ -1,0 +1,8 @@
+﻿{
+  "ResponseMessage": {
+    "Values": {
+      "99": "Success",
+      "100": "Fail"
+    }
+  }
+}

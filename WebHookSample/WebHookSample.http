@@ -1,0 +1,11 @@
+@WebHookSample_HostAddress = http://localhost:5223
+
+GET {{WebHookSample_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{WebHookSample_HostAddress}}/todos/1
+Accept: application/json
+
+###
