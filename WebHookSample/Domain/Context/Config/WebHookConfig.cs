@@ -12,6 +12,7 @@ public sealed class WebHookConfig : IEntityTypeConfiguration<Models.WebHook>
     {
         entity.ToTable("TBL_WEB_HOOK");
 
+        entity.Property(x => x.Id).UseIdentityColumn();
         entity.HasKey(x => new { x.Id, x.Uuid });
 
         entity.Property(x => x.CreatedDatetimeUtc).HasColumnType("timestamp without time zone");

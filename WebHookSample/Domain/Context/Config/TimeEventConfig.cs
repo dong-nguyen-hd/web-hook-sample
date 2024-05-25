@@ -12,6 +12,7 @@ public sealed class TimeEventConfig : IEntityTypeConfiguration<Models.TimeEvent>
     {
         entity.ToTable("TBL_TIME_EVENT");
 
+        entity.Property(x => x.Id).UseIdentityColumn();
         entity.HasKey(x => new { x.Id, x.Uuid });
 
         entity.Property(x => x.TimeStampUtc).HasColumnType("timestamp without time zone");

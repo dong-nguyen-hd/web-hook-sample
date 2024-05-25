@@ -12,6 +12,7 @@ public sealed class HeaderConfig : IEntityTypeConfiguration<Models.Header>
     {
         entity.ToTable("TBL_HEADER");
 
+        entity.Property(x => x.Id).UseIdentityColumn();
         entity.HasKey(x => new { x.Id, x.Uuid });
     }
 }
