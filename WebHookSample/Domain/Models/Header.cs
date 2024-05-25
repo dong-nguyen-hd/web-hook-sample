@@ -6,5 +6,7 @@ public sealed class Header
     public int Id { get; set; }
     public string? Key { get; set; }
     public string? Value { get; set; }
+    public int WebHookId { get; set; }
+    public Guid WebHookUuid { get; set; }
     public WebHook WebHook { get; set; }
 }

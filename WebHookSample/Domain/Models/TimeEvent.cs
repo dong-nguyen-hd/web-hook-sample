@@ -8,5 +8,7 @@ public sealed class TimeEvent
     public int Id { get; set; }
     public ProcessType ProcessType { get; set; }
     public DateTime TimeStampUtc { get; set; }
+    public int WebHookId { get; set; }
+    public Guid WebHookUuid { get; set; }
     public WebHook WebHook { get; set; }
 }

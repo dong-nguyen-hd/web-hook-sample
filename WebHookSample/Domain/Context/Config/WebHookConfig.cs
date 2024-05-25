@@ -17,9 +17,9 @@ public sealed class WebHookConfig : IEntityTypeConfiguration<Models.WebHook>
         entity.Property(x => x.CreatedDatetimeUtc).HasColumnType("timestamp without time zone");
         entity.Property(x => x.TriggerDatetimeUtc).HasColumnType("timestamp without time zone");
 
-        entity.HasKey(x => new { x.CreatedDatetimeUtc, x.IsProcess });
+        entity.HasIndex(x => new { x.CreatedDatetimeUtc, x.IsProcess });
 
-        entity.HasMany(x => x.Headers).WithOne(y => y.WebHook).HasForeignKey(z => new { z.Id, z.Uuid });
-        entity.HasMany(x => x.TimeEvents).WithOne(y => y.WebHook).HasForeignKey(z => new { z.Id, z.Uuid });
+        entity.HasMany(x => x.Headers).WithOne(y => y.WebHook).HasForeignKey(z => new { z.WebHookId, z.WebHookUuid });
+        entity.HasMany(x => x.TimeEvents).WithOne(y => y.WebHook).HasForeignKey(z => new { z.WebHookId, z.WebHookUuid });
     }
 }

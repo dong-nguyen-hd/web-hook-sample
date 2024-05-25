@@ -6,6 +6,7 @@ using System.Reflection;
 public class CoreContext : DbContext
 {
     #region Constructor
+    public CoreContext() { }
     public CoreContext(DbContextOptions<CoreContext> options) : base(options) { }
     #endregion
 

@@ -10,12 +10,15 @@ try
 {
     Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-    var builder = WebApplication.CreateSlimBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
     // Declare external-file
     builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
     builder.Configuration.AddJsonFile("response-message.json", optional: false, reloadOnChange: true);
     builder.Configuration.AddUserSecrets<Program>(false); // Explicit use secrets.json in env production, staging. By default it only use in development
+
+    SystemGlobal.IsDebug = builder.Environment.IsDevelopment();
+    builder.Services.GetSystemData(builder.Configuration);
 
     // Declare log
     builder.Services.AddLog(builder.Configuration);
@@ -52,7 +55,6 @@ try
     }
 
     builder.Services.AddResponseCaching();
-    builder.Services.AddEndpointsApiExplorer(); // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddDbContext<CoreContext>(opts =>
     {
         opts.UseNpgsql(SystemGlobal.PostgresqlConnectionString, o =>
@@ -102,6 +104,9 @@ try
 }
 catch (Exception ex)
 {
+    if (ex is HostAbortedException) // Ex throw by ef-core when migration
+        return;
+
     _hostingSourceContext.LogWithContext().Fatal("Unhandled exception", ex);
 }
 finally
