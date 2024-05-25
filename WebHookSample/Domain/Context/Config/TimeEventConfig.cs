@@ -16,6 +16,6 @@ public sealed class TimeEventConfig : IEntityTypeConfiguration<Models.TimeEvent>
 
         entity.Property(x => x.TimeStampUtc).HasColumnType("timestamp without time zone");
 
-        entity.HasKey(x => new { x.TimeStampUtc, x.ProcessType });
+        entity.HasIndex(x => new { x.TimeStampUtc, x.ProcessType });
     }
 }

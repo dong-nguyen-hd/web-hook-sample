@@ -114,8 +114,8 @@ try
 }
 catch (Exception ex)
 {
-    //if (ex is HostAbortedException) // Ex throw by ef-core when migration
-    //    return;
+    if (ex is HostAbortedException) // Ex throw by ef-core when migration
+        return;
 
     _hostingSourceContext.LogWithContext().Fatal($"Unhandled exception: {ex.Message}", ex);
 }
