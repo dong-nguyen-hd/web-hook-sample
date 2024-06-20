@@ -10,7 +10,7 @@ public sealed class WebHookConfig : IEntityTypeConfiguration<Models.WebHook>
 {
     public void Configure(EntityTypeBuilder<Models.WebHook> entity)
     {
-        entity.ToTable("TBL_WEB_HOOK");
+        entity.ToTable("tbl_web_hook");
 
         entity.Property(x => x.Id).UseIdentityColumn();
         entity.HasKey(x => new { x.Id, x.Uuid });

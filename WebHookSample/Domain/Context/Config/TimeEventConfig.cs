@@ -10,7 +10,7 @@ public sealed class TimeEventConfig : IEntityTypeConfiguration<Models.TimeEvent>
 {
     public void Configure(EntityTypeBuilder<Models.TimeEvent> entity)
     {
-        entity.ToTable("TBL_TIME_EVENT");
+        entity.ToTable("tbl_time_event");
 
         entity.Property(x => x.Id).UseIdentityColumn();
         entity.HasKey(x => new { x.Id, x.Uuid });
