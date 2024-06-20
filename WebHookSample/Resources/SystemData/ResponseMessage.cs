@@ -3,7 +3,7 @@
 public sealed class ResponseMessage
 {
     #region Property
-    public static Dictionary<string, string>? Values { get; set; }
+    public static Dictionary<string, string> Values { get; set; } = new();
     #endregion
 }
 

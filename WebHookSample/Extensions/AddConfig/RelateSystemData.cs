@@ -1,7 +1,5 @@
 ﻿namespace WebHookSample.Extensions.AddConfig;
 
-using Microsoft.VisualBasic;
-
 public static class RelateSystemData
 {
     /// <summary>
