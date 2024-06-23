@@ -13,6 +13,6 @@ public static class InvalidResponseFactory
         return new BadRequestObjectResult(response);
     }
 
-    public static string GetErrorMessages(this ModelStateDictionary dictionary)
+    public static string? GetErrorMessages(this ModelStateDictionary dictionary)
         => dictionary.SelectMany(m => m.Value.Errors).Select(m => m.ErrorMessage).FirstOrDefault();
 }

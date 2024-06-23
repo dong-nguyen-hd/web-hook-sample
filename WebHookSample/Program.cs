@@ -1,6 +1,10 @@
+using Hangfire;
+using Hangfire.Redis.StackExchange;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
+using StackExchange.Redis;
 using WebHookSample.Controllers.Config;
+using WebHookSample.Controllers.Middlewares;
 using WebHookSample.Domain.Context;
 using WebHookSample.Extensions.AddConfig;
 
@@ -54,6 +58,23 @@ try
         });
     }
 
+    // Add hangfire
+    builder.Services.AddHangfire(options =>
+    {
+        options
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseRedisStorage(
+            ConnectionMultiplexer.Connect(CacheConfig.RedisUri ?? string.Empty),
+            new RedisStorageOptions()
+            {
+                Prefix = "web-hook-sample-"
+            }
+        );
+    });
+    builder.Services.AddHangfireServer();
+
     builder.Services.AddResponseCaching();
     builder.Services.AddCustomizeSwagger();
     builder.Services.AddEndpointsApiExplorer(); // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -71,6 +92,7 @@ try
             }
         }).UseSnakeCaseNamingConvention();
     });
+
     builder.Services.AddDependencyInjection(builder.Configuration);
     builder.Services.RegisterHttpClient(builder.Configuration);
     builder.Services.AddCors(options =>
@@ -78,12 +100,12 @@ try
         options.AddPolicy("AllowAll",
             builder => { builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
     });
-
     #endregion
 
     #region Configure the HTTP request pipeline.
     var app = builder.Build();
     app.UseStaticFiles();
+    app.UseHangfireDashboard();
 
     if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     {
@@ -98,7 +120,7 @@ try
     app.UseRouting();
     app.UseResponseCaching();
     //app.UseMiddleware<RequestResponseLoggerMiddleware>();
-    //app.UseMiddleware<ErrorHandlerMiddleware>();
+    app.UseMiddleware<ErrorHandlerMiddleware>();
     app.Use((context, next) => // No-caching explicit
     {
         context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()

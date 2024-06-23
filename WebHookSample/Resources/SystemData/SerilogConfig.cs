@@ -2,6 +2,6 @@
 
 public sealed class SerilogConfig
 {
-    public static string? PathLogFile { get; set; }
-    public static bool DisableConsoleLog { get; set; }
+    public static string? PathLogFile { get; private set; }
+    public static bool DisableConsoleLog { get; private set; }
 }
