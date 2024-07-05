@@ -34,7 +34,7 @@ public static class RelateLogConfig
         {
             logCfg.WriteTo.Logger(lc =>
                 lc.Filter.ByIncludingOnly(Matching.WithProperty<string>("SourceContext", p => p == "Microsoft.Hosting.Lifetime"))
-                .WriteTo.Console());
+                    .WriteTo.Console());
         }
 
         logCfg.WriteTo.File(new JsonFormatter(), SerilogConfig.PathLogFile ?? "./logs/.json", rollingInterval: RollingInterval.Day);

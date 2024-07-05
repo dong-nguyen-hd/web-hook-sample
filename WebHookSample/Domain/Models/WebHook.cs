@@ -1,9 +1,10 @@
-﻿namespace WebHookSample.Domain.Models;
+﻿using WebHookSample.Domain.Models.ToJson;
+
+namespace WebHookSample.Domain.Models;
 
 public sealed class WebHook
 {
-    public Guid Uuid { get; set; } = Guid.NewGuid();
-    public int Id { get; set; }
+    public string Id { get; set; } = new IdGenerator(0).CreateId().ToString();
     public string Uri { get; set; }
     public string? ContentType { get; set; }
     public string? Payload { get; set; }
@@ -13,6 +14,6 @@ public sealed class WebHook
     public bool EnableVerifyTls { get; set; }
     public DateTime CreatedDatetimeUtc { get; set; }
     public DateTime TriggerDatetimeUtc { get; set; }
-    public HashSet<Header> Headers { get; set; }
+    public List<Header> Headers { get; set; }
     public HashSet<TimeEvent> TimeEvents { get; set; }
 }

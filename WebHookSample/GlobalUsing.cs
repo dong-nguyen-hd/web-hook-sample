@@ -5,3 +5,4 @@ global using System.Text.Json.Serialization;
 global using Serilog;
 global using WebHookSample.Resources.Results;
 global using WebHookSample.Extensions;
+global using IdGen;

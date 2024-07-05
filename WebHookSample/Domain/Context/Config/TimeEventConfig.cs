@@ -1,7 +1,7 @@
-﻿namespace WebHookSample.Domain.Context.Config;
-
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
+
+namespace WebHookSample.Domain.Context.Config;
 
 /// <summary>
 /// Chức năng: cấu hình schema cho bảng TimeEvent
@@ -12,8 +12,7 @@ public sealed class TimeEventConfig : IEntityTypeConfiguration<Models.TimeEvent>
     {
         entity.ToTable("tbl_time_event");
 
-        entity.Property(x => x.Id).UseIdentityColumn();
-        entity.HasKey(x => new { x.Id, x.Uuid });
+        entity.HasKey(x => x.Id);
 
         entity.Property(x => x.TimeStampUtc).HasColumnType("timestamp without time zone");
 

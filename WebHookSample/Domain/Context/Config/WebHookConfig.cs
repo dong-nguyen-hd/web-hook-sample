@@ -1,7 +1,7 @@
-﻿namespace WebHookSample.Domain.Context.Config;
-
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
+
+namespace WebHookSample.Domain.Context.Config;
 
 /// <summary>
 /// Chức năng: cấu hình schema cho bảng WebHook
@@ -12,15 +12,14 @@ public sealed class WebHookConfig : IEntityTypeConfiguration<Models.WebHook>
     {
         entity.ToTable("tbl_web_hook");
 
-        entity.Property(x => x.Id).UseIdentityColumn();
-        entity.HasKey(x => new { x.Id, x.Uuid });
+        entity.HasKey(x => x.Id);
 
         entity.Property(x => x.CreatedDatetimeUtc).HasColumnType("timestamp without time zone");
         entity.Property(x => x.TriggerDatetimeUtc).HasColumnType("timestamp without time zone");
 
         entity.HasIndex(x => new { x.CreatedDatetimeUtc, x.IsProcess });
 
-        entity.HasMany(x => x.Headers).WithOne(y => y.WebHook).HasForeignKey(z => new { z.WebHookId, z.WebHookUuid });
-        entity.HasMany(x => x.TimeEvents).WithOne(y => y.WebHook).HasForeignKey(z => new { z.WebHookId, z.WebHookUuid });
+        entity.HasMany(x => x.TimeEvents).WithOne(y => y.WebHook).HasForeignKey(z => z.WebHookId);
+        entity.OwnsOne(x => x.Headers, builder => { builder.ToJson(); });
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace WebHookSample.Domain.Context;
+﻿using WebHookSample.Domain.Models.ToJson;
+
+namespace WebHookSample.Domain.Context;
 
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -12,7 +14,7 @@ public class CoreContext : DbContext
 
     #region Properties
     public DbSet<Models.WebHook> WebHooks { get; set; }
-    public DbSet<Models.Header> Headers { get; set; }
+    public DbSet<Header> Headers { get; set; }
     public DbSet<Models.TimeEvent> TimeEvents { get; set; }
     #endregion
 

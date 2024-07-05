@@ -1,14 +1,12 @@
 ﻿namespace WebHookSample.Domain.Models;
 
-using WebHookSample.Resources.Enums;
+using Resources.Enums;
 
 public sealed class TimeEvent
 {
-    public Guid Uuid { get; set; } = Guid.NewGuid();
-    public int Id { get; set; }
+    public string Id { get; set; } = new IdGenerator(0).CreateId().ToString();
     public ProcessType ProcessType { get; set; }
     public DateTime TimeStampUtc { get; set; }
-    public int WebHookId { get; set; }
-    public Guid WebHookUuid { get; set; }
+    public string WebHookId { get; set; }
     public WebHook WebHook { get; set; }
 }

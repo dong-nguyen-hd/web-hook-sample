@@ -26,7 +26,7 @@ public static class RelateText
     /// <param name="text"></param>
     /// <returns></returns>
     public static string RemoveAllSpaceChar(this string? text) =>
-       string.IsNullOrEmpty(text) ? string.Empty : Regex.Replace(text.Trim(), @"\s+", "");
+        string.IsNullOrEmpty(text) ? string.Empty : Regex.Replace(text.Trim(), @"\s+", "");
 
     #region MySerialize
     private static JsonSerializerOptions _opt = new JsonSerializerOptions()

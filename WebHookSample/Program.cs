@@ -119,7 +119,7 @@ try
     app.UseCors("AllowAll");
     app.UseRouting();
     app.UseResponseCaching();
-    //app.UseMiddleware<RequestResponseLoggerMiddleware>();
+    app.UseMiddleware<LoggerMiddleware>();
     app.UseMiddleware<ErrorHandlerMiddleware>();
     app.Use((context, next) => // No-caching explicit
     {
