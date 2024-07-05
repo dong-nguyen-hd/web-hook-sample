@@ -1,5 +1,8 @@
-﻿using WebHookSample.Controllers.Middlewares;
+﻿using FluentValidation;
+using WebHookSample.Controllers.Middlewares;
 using WebHookSample.Domain.Services;
+using WebHookSample.Resources.DTOs.WebHook.Mapping;
+using WebHookSample.Resources.DTOs.WebHook.Validation;
 using WebHookSample.Services;
 
 namespace WebHookSample.Extensions.AddConfig;
@@ -10,5 +13,8 @@ public static class RelateServices
     {
         services.AddScoped<ILogModelCreator, LogModelCreator>();
         services.AddScoped<ILogService, LogService>();
+        
+        services.AddAutoMapper(typeof(ResourceToModelProfile));
+        services.AddValidatorsFromAssemblyContaining<CreateWebHookValidator>();
     }
 }

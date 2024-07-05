@@ -6,3 +6,4 @@ global using Serilog;
 global using WebHookSample.Resources.Results;
 global using WebHookSample.Extensions;
 global using IdGen;
+global using WebHookSample.Extensions.AddConfig;

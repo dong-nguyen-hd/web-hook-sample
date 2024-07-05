@@ -1,18 +1,50 @@
-﻿namespace WebHookSample.Extensions.AddConfig;
-
-using Serilog;
+﻿using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Extensions.Compliance.Redaction;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Filters;
 using Serilog.Formatting.Json;
+using Serilog.Redaction;
+using ILogger = Serilog.ILogger;
+
+namespace WebHookSample.Extensions.AddConfig;
+
+#region Redaction declare
+
+public static class Taxonomy
+{
+    public static string TaxonomyName => typeof(Taxonomy).FullName!;
+
+    public static DataClassification SensitiveData => new(TaxonomyName, nameof(SensitiveData));
+}
+
+public class SensitiveDataAttribute() : DataClassificationAttribute(Taxonomy.SensitiveData);
+
+public class MyErasingRedactor : Redactor
+{
+    private const string ErasedValue = "*** Masked ***"; // Use this value for sensitive data
+
+    public override int GetRedactedLength(ReadOnlySpan<char> input)
+        => ErasedValue.Length;
+
+    public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
+    {
+        // The base class ensures destination has sufficient capacity
+        ErasedValue.CopyTo(destination);
+        return ErasedValue.Length;
+    }
+}
+#endregion
 
 public static class RelateLogConfig
 {
-    public static Serilog.ILogger LogWithContext(this string context) =>
+    public static ILogger LogWithContext(this string context) =>
         Log.ForContext("SourceContext", context);
 
     public static void AddLog(this IServiceCollection services, IConfiguration configuration)
     {
+        #region Config log-type
+
         var logCfg = new LoggerConfiguration();
 
         logCfg.MinimumLevel.Information()
@@ -40,5 +72,15 @@ public static class RelateLogConfig
         logCfg.WriteTo.File(new JsonFormatter(), SerilogConfig.PathLogFile ?? "./logs/.json", rollingInterval: RollingInterval.Day);
 
         Log.Logger = logCfg.CreateLogger();
+
+        #endregion
+
+        #region Config Redaction
+
+        services.AddRedaction(x => { x.SetRedactor<MyErasingRedactor>(DataClassificationSet.FromDataClassification(Taxonomy.SensitiveData)); });
+
+        services.AddSerilog((sp, loggerConfiguration) => { loggerConfiguration.Destructure.WithRedaction(sp.GetRequiredService<IRedactorProvider>()); });
+
+        #endregion
     }
 }
