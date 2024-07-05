@@ -1,3 +1,4 @@
+using WebHookSample.Domain.Models.ToJson;
 using HttpMethod = WebHookSample.Resources.Enums.HttpMethod;
 
 namespace WebHookSample.Resources.DTOs.WebHook.Request;
@@ -7,6 +8,7 @@ public sealed class CreateWebHookRequest
     public string Uri { get; set; }
     public string? ContentType { get; set; }
     [SensitiveData] public string? Payload { get; set; }
+    [SensitiveData] public List<Header>? Headers { get; set; }
     public HttpMethod HttpMethod { get; set; }
     public int NumberRetry { get; set; }
     public bool EnableVerifyTls { get; set; }

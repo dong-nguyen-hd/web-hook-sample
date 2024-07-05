@@ -77,7 +77,7 @@ public static class RelateLogConfig
 
         #region Config Redaction
 
-        services.AddRedaction(x => { x.SetRedactor<MyErasingRedactor>(DataClassificationSet.FromDataClassification(Taxonomy.SensitiveData)); });
+        services.AddRedaction(x => { x.SetRedactor<MyErasingRedactor>(new DataClassificationSet(Taxonomy.SensitiveData)); });
 
         services.AddSerilog((sp, loggerConfiguration) => { loggerConfiguration.Destructure.WithRedaction(sp.GetRequiredService<IRedactorProvider>()); });
 

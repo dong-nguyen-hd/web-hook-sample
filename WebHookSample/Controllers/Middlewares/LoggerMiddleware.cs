@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Diagnostics;
+using WebHookSample.Domain.Services;
+using WebHookSample.Resources.Enums;
+
 namespace WebHookSample.Controllers.Middlewares;
 
-using WebHookSample.Domain.Services;
-using Microsoft.AspNetCore.Diagnostics;
-
 #region Log Creator
+
 public interface ILogModelCreator
 {
     Models.Log LogModel { get; }
@@ -17,18 +19,21 @@ public sealed class LogModelCreator(ILogService logService) : ILogModelCreator
     public void Logging() =>
         logService.Write(LogModel);
 }
+
 #endregion
 
 #region Middleware
+
 public sealed class LoggerMiddleware(RequestDelegate next)
 {
     #region Method
+
     public async Task InvokeAsync(HttpContext httpContext, ILogModelCreator logCreator)
     {
         var log = logCreator.LogModel;
 
         log.RequestDatetimeUtc = DateTime.UtcNow;
-        log.LogType = Resources.Enums.LogType.Log;
+        log.LogType = LogType.Log;
         HttpRequest request = httpContext.Request;
 
         // Log
@@ -88,10 +93,12 @@ public sealed class LoggerMiddleware(RequestDelegate next)
     }
 
     #region Private work
+
     private void LogError(Models.Log log, Exception exception)
     {
-        Serilog.Log.Error(exception, $"LogId ({log.Id}): {exception.Message}");
+        Log.Error(exception, $"LogId ({log.Id}): {exception.Message}");
 
+        log.HasException = true;
         log.ExceptionMessage = exception.Message;
         log.ExceptionStackTrace = exception.StackTrace;
     }
@@ -133,6 +140,7 @@ public sealed class LoggerMiddleware(RequestDelegate next)
 
         return requestBody;
     }
+
     #endregion
 
     #endregion

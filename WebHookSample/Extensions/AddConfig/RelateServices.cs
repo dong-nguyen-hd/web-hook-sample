@@ -13,6 +13,7 @@ public static class RelateServices
     {
         services.AddScoped<ILogModelCreator, LogModelCreator>();
         services.AddScoped<ILogService, LogService>();
+        services.AddScoped<IWebHookService, WebHookService>();
         
         services.AddAutoMapper(typeof(ResourceToModelProfile));
         services.AddValidatorsFromAssemblyContaining<CreateWebHookValidator>();
