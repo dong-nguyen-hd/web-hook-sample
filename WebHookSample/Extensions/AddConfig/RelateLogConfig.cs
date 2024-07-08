@@ -4,7 +4,7 @@ using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Filters;
 using Serilog.Formatting.Json;
-using Serilog.Redaction;
+using Serilog.Sinks.Elasticsearch;
 using ILogger = Serilog.ILogger;
 
 namespace WebHookSample.Extensions.AddConfig;
@@ -34,6 +34,7 @@ public class MyErasingRedactor : Redactor
         return ErasedValue.Length;
     }
 }
+
 #endregion
 
 public static class RelateLogConfig
@@ -47,7 +48,8 @@ public static class RelateLogConfig
 
         var logCfg = new LoggerConfiguration();
 
-        logCfg.MinimumLevel.Information()
+        logCfg
+            .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
@@ -57,19 +59,34 @@ public static class RelateLogConfig
             .Enrich.WithEnvironmentUserName()
             .Enrich.WithProperty("ApplicationName", SystemInformation.ApplicationName);
 
-        // Debug env
-        if (SystemGlobal.IsDebug || !SerilogConfig.DisableConsoleLog)
-        {
+        if (SerilogConfig.EnableConsoleLog)
             logCfg.WriteTo.Console();
-        }
-        else // Production env
+        else
         {
+            // Log only important information
             logCfg.WriteTo.Logger(lc =>
                 lc.Filter.ByIncludingOnly(Matching.WithProperty<string>("SourceContext", p => p == "Microsoft.Hosting.Lifetime"))
                     .WriteTo.Console());
         }
 
-        logCfg.WriteTo.File(new JsonFormatter(), SerilogConfig.PathLogFile ?? "./logs/.json", rollingInterval: RollingInterval.Day);
+        if (SerilogConfig.EnableFileLog)
+            logCfg.WriteTo.File(new JsonFormatter(), SerilogConfig.PathFileLog ?? "./logs/.json", rollingInterval: RollingInterval.Day);
+
+        if (SerilogConfig.EnableElasticsearchLog)
+        {
+            logCfg.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(SerilogConfig.ElasticsearchUri))
+            {
+                AutoRegisterTemplate = true,
+                AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv8,
+                ModifyConnectionSettings = (settings) =>
+                {
+                    settings.ServerCertificateValidationCallback((o, certificate, arg3, arg4) => true);
+                    settings.BasicAuthentication(SerilogConfig.ElasticsearchUsername, SerilogConfig.ElasticsearchUsername);
+                    return settings;
+                },
+                IndexFormat = SerilogConfig.ElasticsearchIndexFormat
+            });
+        }
 
         Log.Logger = logCfg.CreateLogger();
 
@@ -77,9 +94,9 @@ public static class RelateLogConfig
 
         #region Config Redaction
 
-        services.AddRedaction(x => { x.SetRedactor<MyErasingRedactor>(new DataClassificationSet(Taxonomy.SensitiveData)); });
-
-        services.AddSerilog((sp, loggerConfiguration) => { loggerConfiguration.Destructure.WithRedaction(sp.GetRequiredService<IRedactorProvider>()); });
+        // services.AddRedaction(x => { x.SetRedactor<MyErasingRedactor>(new DataClassificationSet(Taxonomy.SensitiveData)); });
+        //
+        // services.AddSerilog((sp, loggerConfiguration) => { loggerConfiguration.Destructure.WithRedaction(sp.GetRequiredService<IRedactorProvider>()); });
 
         #endregion
     }

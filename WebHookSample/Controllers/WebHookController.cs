@@ -19,8 +19,9 @@ public sealed partial class WebHookController(IWebHookService webHookService, IM
     [SwaggerOperation(summary: "Create web hook")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateWebHookRequest request)
     {
-        var result = await webHookService.CreateAsync(request);
-        return Ok(result);
+        Serilog.Log.Information("{@Test}", request);
+        //var result = await webHookService.CreateAsync(request);
+        return Ok();
     }
 
     #endregion
