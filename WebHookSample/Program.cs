@@ -33,11 +33,11 @@ try
     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
     #region Add services to the container.
+
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddControllers(opt =>
     {
         opt.ApplyProfile(); // Add custom cache profile
-
     }).ConfigureApiBehaviorOptions(options =>
     {
         // Adds a custom error response factory when Model-State is invalid
@@ -45,11 +45,7 @@ try
     });
 
     // Add redis / mem cache
-    if (CacheConfig.UseMemoryCache)
-    {
-        builder.Services.AddDistributedMemoryCache();
-    }
-    else
+    if (CacheConfig.UseRedis)
     {
         builder.Services.AddStackExchangeRedisCache(options =>
         {
@@ -57,21 +53,25 @@ try
             options.InstanceName = CacheConfig.RedisInstanceName;
         });
     }
+    else
+    {
+        builder.Services.AddDistributedMemoryCache();
+    }
 
     // Add hangfire
     builder.Services.AddHangfire(options =>
     {
         options
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UseRedisStorage(
-            ConnectionMultiplexer.Connect(CacheConfig.RedisUri ?? string.Empty),
-            new RedisStorageOptions()
-            {
-                Prefix = "web-hook-sample-"
-            }
-        );
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseRedisStorage(
+                ConnectionMultiplexer.Connect(CacheConfig.RedisUri ?? string.Empty),
+                new RedisStorageOptions()
+                {
+                    Prefix = CacheConfig.RedisInstanceName
+                }
+            );
     });
     builder.Services.AddHangfireServer();
 
@@ -85,7 +85,7 @@ try
         {
             o.EnableRetryOnFailure();
 
-            if (SystemGlobal.IsDebug == true)
+            if (SystemGlobal.IsDebug)
             {
                 opts.EnableDetailedErrors();
                 opts.EnableSensitiveDataLogging();
@@ -100,9 +100,11 @@ try
         options.AddPolicy("AllowAll",
             builder => { builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
     });
+
     #endregion
 
     #region Configure the HTTP request pipeline.
+
     var app = builder.Build();
     app.UseStaticFiles();
     app.UseHangfireDashboard();
@@ -132,6 +134,7 @@ try
     });
     app.MapControllers();
     app.Run();
+
     #endregion
 }
 catch (Exception ex)
