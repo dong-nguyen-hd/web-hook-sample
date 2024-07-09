@@ -45,7 +45,7 @@ public sealed class LoggerMiddleware(RequestDelegate next)
         log.RequestMethod = request.Method;
         log.RequestPath = request.Path;
         log.RequestQuery = request.QueryString.ToString();
-        log.RequestQueries = FormatQueries(request.QueryString.ToString());
+        log.RequestQueries = request.QueryString.ToString().FormatQueries();
         log.RequestHeaders = FormatHeaders(request.Headers);
         log.RequestBody = await ReadBodyFromRequest(request);
         log.RequestScheme = request.Scheme;
@@ -108,22 +108,6 @@ public sealed class LoggerMiddleware(RequestDelegate next)
         Dictionary<string, string> pairs = new();
         foreach (var header in headers)
             pairs.TryAdd(header.Key, header.Value);
-
-        return pairs;
-    }
-
-    private Dictionary<string, string> FormatQueries(string queryString)
-    {
-        Dictionary<string, string> pairs = new();
-        string key, value;
-        foreach (var query in queryString.TrimStart('?').Split('&'))
-        {
-            var items = query.Split('=');
-            key = items.Count() >= 1 ? items[0] : string.Empty;
-            value = items.Count() >= 2 ? items[1] : string.Empty;
-            if (!string.IsNullOrEmpty(key))
-                pairs.TryAdd(key, value);
-        }
 
         return pairs;
     }

@@ -7,6 +7,7 @@ public sealed class Log
     public string Id { get; set; } = new IdGenerator(0).CreateId().ToString();
     public string? Node { get; set; }
     public string? ClientIp { get; set; }
+    public string? WebHookId { get; set; }
     public string? TraceId { get => traceId; set => traceId = value?.Replace(':', '_'); }
     private string? traceId;
     public LogType? LogType { get; set; }

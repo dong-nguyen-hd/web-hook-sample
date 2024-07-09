@@ -17,11 +17,10 @@ public sealed partial class WebHookController(IWebHookService webHookService, IM
     [ResponseCache(CacheProfileName = CustomCacheProfile.NoCache)]
     [ProducesResponseType(typeof(BaseResult<WebHookResponse>), 200)]
     [SwaggerOperation(summary: "Create web hook")]
-    public async Task<IActionResult> CreateAsync([FromBody] CreateWebHookRequest request)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateWebHookRequest request, CancellationToken token)
     {
-        Serilog.Log.Information("{@Test}", request);
-        //var result = await webHookService.CreateAsync(request);
-        return Ok();
+        var result = await webHookService.CreateAsync(request, token);
+        return Ok(result);
     }
 
     #endregion

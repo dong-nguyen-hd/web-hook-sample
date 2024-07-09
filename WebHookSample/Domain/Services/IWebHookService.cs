@@ -9,6 +9,15 @@ public interface IWebHookService
     /// Role: create webhook
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="token"></param>
     /// <returns></returns>
-    Task<WebHookResponse> CreateAsync(CreateWebHookRequest request);
+    Task<BaseResult<WebHookResponse>> CreateAsync(CreateWebHookRequest request, CancellationToken token);
+
+    /// <summary>
+    /// Role: request to 3th
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    Task RequestAsync(Models.WebHook request, CancellationToken token);
 }
