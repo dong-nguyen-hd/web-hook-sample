@@ -6,13 +6,12 @@ using StackExchange.Redis;
 using WebHookSample.Controllers.Config;
 using WebHookSample.Controllers.Middlewares;
 using WebHookSample.Domain.Context;
-using WebHookSample.Extensions.AddConfig;
 
 const string _hostingSourceContext = "Microsoft.Hosting.Lifetime";
 
 try
 {
-    Console.OutputEncoding = System.Text.Encoding.UTF8;
+    Console.OutputEncoding = Encoding.UTF8;
 
     var builder = WebApplication.CreateBuilder(args);
 

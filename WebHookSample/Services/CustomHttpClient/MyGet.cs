@@ -13,8 +13,10 @@ public sealed partial class CustomHttpClient
             SetHeader(client, request, log);
 
             // Request
-            var response = await client.GetAsync(request.Uri, ts);
-            SetLogResponse(log, response);
+            var task = client.GetAsync(request.Uri, ts);
+            await RetryRequestAsync(request, task, ts);
+
+            SetLogResponse(log, task.Result);
 
             return true;
         }

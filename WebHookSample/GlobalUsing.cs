@@ -7,3 +7,4 @@ global using WebHookSample.Resources.Results;
 global using WebHookSample.Extensions;
 global using IdGen;
 global using WebHookSample.Extensions.AddConfig;
+global using System.Text;

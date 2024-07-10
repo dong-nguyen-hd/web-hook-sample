@@ -1,4 +1,5 @@
-using System.Text;
+using Polly;
+using Polly.Retry;
 
 namespace WebHookSample.Services.CustomHttpClient;
 
@@ -15,9 +16,11 @@ public sealed partial class CustomHttpClient
             SetHeader(client, request, log);
 
             // Request
-            var payload = new StringContent(request.Payload ?? string.Empty, Encoding.UTF8);
-            var response = await client.PostAsync(request.Uri, payload, ts);
-            SetLogResponse(log, response);
+            var payload = new StringContent(request.Payload ?? string.Empty, Encoding.UTF8, MimeType.JSON);
+            var task = client.PostAsync(request.Uri, payload, ts);
+            await RetryRequestAsync(request, task, ts);
+
+            SetLogResponse(log, task.Result);
 
             return true;
         }

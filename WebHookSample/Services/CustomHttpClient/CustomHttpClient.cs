@@ -1,3 +1,5 @@
+using Polly;
+using Polly.Retry;
 using WebHookSample.Domain.Services;
 using WebHookSample.Resources.Enums;
 
@@ -10,23 +12,47 @@ public sealed partial class CustomHttpClient(
 {
     #region Properties
 
-    private static readonly string contentType = "Content-Type";
     private readonly HttpContext? _httpContext = httpContextAccessor?.HttpContext;
 
     #endregion
 
     #region Method
 
+    private async Task RetryRequestAsync(Models.WebHook webHook, Task<HttpResponseMessage> task, CancellationToken cancellationToken)
+    {
+        var maxRetryAttempts = webHook.NumberRetry;
+
+        if (maxRetryAttempts == 0)
+        {
+            await task;
+        }
+        else
+        {
+            var pauseBetweenFailures = TimeSpan.FromSeconds(2);
+
+            var pipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+                .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+                {
+                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                        .Handle<Exception>()
+                        .HandleResult(static result =>
+                        {
+                            Serilog.Log.Information(result.ToString());
+                            return !result.IsSuccessStatusCode;
+                        }),
+                    Delay = pauseBetweenFailures,
+                    MaxRetryAttempts = maxRetryAttempts,
+                    BackoffType = DelayBackoffType.Constant
+                })
+                .Build();
+
+            await pipeline.ExecuteAsync(async token => await task, cancellationToken);
+        }
+    }
+
     private void SetHeader(HttpClient client, Models.WebHook webHook, Models.Log log)
     {
         Dictionary<string, string> headers = new();
-
-        // Set content type
-        if (!string.IsNullOrEmpty(webHook.ContentType))
-        {
-            client.DefaultRequestHeaders.Add(contentType, webHook.ContentType);
-            headers.TryAdd(contentType, webHook.ContentType);
-        }
 
         // Set other header
         if (webHook.Headers is not null and { Count: > 0 })
@@ -72,7 +98,7 @@ public sealed partial class CustomHttpClient(
     private void SetLogResponse(Models.Log log, HttpResponseMessage response)
     {
         log.ResponseDatetimeUtc = DateTime.UtcNow;
-        log.ResponseStatus = response.StatusCode.ToString();
+        log.ResponseStatus = response.StatusCode.ToString("D");
         log.ResponseContentType = response?.Content?.Headers?.ContentType?.MediaType;
         log.ResponseHeaders = GetHeader();
 
