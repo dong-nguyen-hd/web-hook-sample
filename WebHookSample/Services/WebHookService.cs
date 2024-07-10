@@ -54,7 +54,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
     /// <returns></returns>
     private (bool isNow, int seconds) IsExecuteNow(DateTime triggerDatetimeUtc, DateTime utcNow)
     {
-        var condition = utcNow - triggerDatetimeUtc;
+        var condition = triggerDatetimeUtc - utcNow;
         int seconds = condition.TotalSeconds < 0 ? 0 : (int)condition.TotalSeconds;
 
         if (condition.TotalHours < 1)

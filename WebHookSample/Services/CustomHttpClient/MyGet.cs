@@ -14,6 +14,7 @@ public sealed partial class CustomHttpClient
 
             // Request
             var response = await client.GetAsync(request.Uri, ts);
+            SetLogResponse(log, response);
 
             return true;
         }

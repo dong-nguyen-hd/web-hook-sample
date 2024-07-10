@@ -69,5 +69,23 @@ public sealed partial class CustomHttpClient(
         return temp;
     }
 
+    private void SetLogResponse(Models.Log log, HttpResponseMessage response)
+    {
+        log.ResponseDatetimeUtc = DateTime.UtcNow;
+        log.ResponseStatus = response.StatusCode.ToString();
+        log.ResponseContentType = response?.Content?.Headers?.ContentType?.MediaType;
+        log.ResponseHeaders = GetHeader();
+
+        Dictionary<string, string> GetHeader()
+        {
+            Dictionary<string, string> temp = new();
+
+            foreach (var item in response?.Headers?.ToDictionary())
+                temp.TryAdd(item.Key, string.Join(';', item.Value?.ToArray()));
+
+            return temp;
+        }
+    }
+
     #endregion
 }

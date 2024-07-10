@@ -17,13 +17,12 @@ public sealed partial class CustomHttpClient
             // Request
             var payload = new StringContent(request.Payload ?? string.Empty, Encoding.UTF8);
             var response = await client.PostAsync(request.Uri, payload, ts);
-            string raw = await response.Content.ReadAsStringAsync(ts);
+            SetLogResponse(log, response);
 
             return true;
         }
         catch (Exception ex)
         {
-            // EpayWallet logging
             log.HasException = true;
             log.ExceptionMessage = ex.Message;
             log.ExceptionStackTrace = ex.StackTrace;
