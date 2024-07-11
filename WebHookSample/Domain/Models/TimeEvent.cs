@@ -1,6 +1,6 @@
-﻿namespace WebHookSample.Domain.Models;
+﻿using WebHookSample.Resources.Enums;
 
-using Resources.Enums;
+namespace WebHookSample.Domain.Models;
 
 public sealed class TimeEvent
 {

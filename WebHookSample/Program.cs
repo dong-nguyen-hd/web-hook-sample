@@ -73,6 +73,7 @@ try
             );
     });
     builder.Services.AddHangfireServer();
+    builder.Services.RegisterCronJob();
 
     builder.Services.AddResponseCaching();
     builder.Services.AddCustomizeSwagger();

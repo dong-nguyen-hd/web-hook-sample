@@ -81,16 +81,14 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         var level = await customHttpClient.SendAsync(request, token);
 
         request.IsDone = true;
-        request.TimeEvents = new HashSet<Models.TimeEvent>()
+        Models.TimeEvent timeEvent = new()
         {
-            new()
-            {
-                ProcessType = level,
-                TimeStampUtc = DateTime.UtcNow,
-            }
+            ProcessType = level,
+            TimeStampUtc = DateTime.UtcNow,
+            WebHookId = request.Id
         };
 
-        Context.WebHooks.Update(request);
+        await Context.TimeEvents.AddAsync(timeEvent, token);
         await Context.SaveChangesAsync(token);
     }
 
