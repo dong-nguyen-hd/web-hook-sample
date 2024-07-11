@@ -49,12 +49,6 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         return GetBaseResult(CodeMessage._99, Mapper.Map<WebHookResponse>(webHook));
     }
 
-    /// <summary>
-    /// Role: the classification of webhook can be performed immediately
-    /// </summary>
-    /// <param name="triggerDatetimeUtc"></param>
-    /// <param name="utcNow"></param>
-    /// <returns></returns>
     public (ExecutionLevel level, int seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow)
     {
         var condition = triggerDatetimeUtc - utcNow;
