@@ -22,7 +22,5 @@ public interface IWebHookService
     /// <returns></returns>
     (ExecutionLevel level, int seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow);
 
-    Task RequestNowAsync(Models.WebHook request, CancellationToken token);
-
     Task RequestSoonAsync(Models.WebHook request, CancellationToken token);
 }

@@ -34,6 +34,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
 
         if (executeNow.level == ExecutionLevel.Soon)
         {
+            webHook.Level = ExecutionLevel.Soon;
             await Context.SaveChangesAsync(token);
             webHook.TimeEvents = null!; // Avoid circle loop when json-serialization
             BackgroundJob.Schedule(() => RequestSoonAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
@@ -66,7 +67,25 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         return (ExecutionLevel.Later, 0);
     }
 
-    public async Task RequestNowAsync(Models.WebHook request, CancellationToken token)
+    public async Task RequestSoonAsync(Models.WebHook request, CancellationToken token)
+    {
+        var level = await customHttpClient.SendAsync(request, token);
+
+        request.IsDone = true;
+        Models.TimeEvent timeEvent = new()
+        {
+            ProcessType = level,
+            TimeStampUtc = DateTime.UtcNow,
+            WebHookId = request.Id
+        };
+
+        await Context.TimeEvents.AddAsync(timeEvent, token);
+        await Context.SaveChangesAsync(token);
+    }
+
+    #region Private work
+
+    private async Task RequestNowAsync(Models.WebHook request, CancellationToken token)
     {
         var level = await customHttpClient.SendAsync(request, token);
 
@@ -83,22 +102,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         await Context.SaveChangesAsync(token);
     }
 
-    public async Task RequestSoonAsync(Models.WebHook request, CancellationToken token)
-    {
-        var level = await customHttpClient.SendAsync(request, token);
-
-        request.IsDone = true;
-        request.Level = ExecutionLevel.Soon;
-        Models.TimeEvent timeEvent = new()
-        {
-            ProcessType = level,
-            TimeStampUtc = DateTime.UtcNow,
-            WebHookId = request.Id
-        };
-
-        await Context.TimeEvents.AddAsync(timeEvent, token);
-        await Context.SaveChangesAsync(token);
-    }
+    #endregion
 
     #endregion
 }
