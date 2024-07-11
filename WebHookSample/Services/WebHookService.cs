@@ -31,7 +31,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
 
     public async Task RequestAsync(Models.WebHook request, CancellationToken token)
     {
-        bool isSuccess = await customHttpClient.Post(request, token);
+        bool isSuccess = await customHttpClient.SendAsync(request, token);
 
         // Save time event
         var webHook = await Context.WebHooks.SingleAsync(x => x.Id == request.Id);

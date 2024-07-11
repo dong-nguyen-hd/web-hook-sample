@@ -4,7 +4,6 @@ using WebHookSample.Domain.Services;
 using WebHookSample.Resources.DTOs.WebHook.Mapping;
 using WebHookSample.Resources.DTOs.WebHook.Validation;
 using WebHookSample.Services;
-using WebHookSample.Services.CustomHttpClient;
 
 namespace WebHookSample.Extensions.AddConfig;
 
