@@ -47,4 +47,9 @@
     <PackageReference Include="TimeZoneConverter" Version="6.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="logs\20240705.json" />
+    <_ContentIncludedByDefault Remove="logs\20240708.json" />
+  </ItemGroup>
+
 </Project>

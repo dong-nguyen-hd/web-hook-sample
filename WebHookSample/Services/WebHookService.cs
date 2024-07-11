@@ -39,6 +39,12 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
             BackgroundJob.Schedule(() => RequestSoonAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
         }
 
+        if (executeNow.level == ExecutionLevel.Later)
+        {
+            webHook.Level = ExecutionLevel.Later;
+            await Context.SaveChangesAsync(token);
+        }
+
         return GetBaseResult(CodeMessage._99, Mapper.Map<WebHookResponse>(webHook));
     }
 
@@ -65,6 +71,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         var level = await customHttpClient.SendAsync(request, token);
 
         request.IsDone = true;
+        request.Level = ExecutionLevel.Now;
         request.TimeEvents.Add(
             new()
             {
@@ -81,6 +88,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         var level = await customHttpClient.SendAsync(request, token);
 
         request.IsDone = true;
+        request.Level = ExecutionLevel.Soon;
         Models.TimeEvent timeEvent = new()
         {
             ProcessType = level,

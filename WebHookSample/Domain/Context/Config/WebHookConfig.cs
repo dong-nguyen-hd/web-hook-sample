@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace WebHookSample.Domain.Context.Config;
 
 /// <summary>
-/// Chức năng: cấu hình schema cho bảng WebHook
+/// Role: config shema for WebHook table
 /// </summary>
 public sealed class WebHookConfig : IEntityTypeConfiguration<Models.WebHook>
 {
@@ -17,7 +17,7 @@ public sealed class WebHookConfig : IEntityTypeConfiguration<Models.WebHook>
         entity.Property(x => x.CreatedDatetimeUtc).HasColumnType("timestamp without time zone");
         entity.Property(x => x.TriggerDatetimeUtc).HasColumnType("timestamp without time zone");
 
-        entity.HasIndex(x => new { x.CreatedDatetimeUtc, IsProcess = x.IsDone });
+        entity.HasIndex(x => new { x.TriggerDatetimeUtc, x.IsDone, x.Level });
 
         entity.HasMany(x => x.TimeEvents).WithOne(y => y.WebHook).HasForeignKey(z => z.WebHookId);
         entity.OwnsOne(x => x.Headers, builder => { builder.ToJson(); });

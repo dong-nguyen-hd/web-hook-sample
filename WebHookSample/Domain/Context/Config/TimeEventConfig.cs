@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace WebHookSample.Domain.Context.Config;
 
 /// <summary>
-/// Chức năng: cấu hình schema cho bảng TimeEvent
+/// Role: config shema for TimeEvent table
 /// </summary>
 public sealed class TimeEventConfig : IEntityTypeConfiguration<Models.TimeEvent>
 {
