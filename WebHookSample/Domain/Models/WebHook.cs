@@ -9,7 +9,7 @@ public sealed class WebHook
     public string? Payload { get; set; }
     public Resources.Enums.HttpMethod HttpMethod { get; set; }
     public int NumberRetry { get; set; }
-    public bool IsProcess { get; set; }
+    public bool IsDone { get; set; }
     public bool EnableVerifyTls { get; set; }
     public DateTime CreatedDatetimeUtc { get; set; }
     public DateTime TriggerDatetimeUtc { get; set; }

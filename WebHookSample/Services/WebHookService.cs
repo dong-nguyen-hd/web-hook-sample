@@ -1,6 +1,5 @@
 using AutoMapper;
 using Hangfire;
-using Microsoft.EntityFrameworkCore;
 using WebHookSample.Domain.Context;
 using WebHookSample.Domain.Services;
 using WebHookSample.Resources.DTOs.WebHook.Request;
@@ -17,33 +16,30 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
     {
         // Save to DB
         var webHook = Mapper.Map<Models.WebHook>(request);
-        await Context.WebHooks.AddAsync(webHook, token);
-        await Context.SaveChangesAsync(token);
-
-        var executeNow = IsExecuteNow(request.TriggerDatetimeUtc, DateTime.UtcNow);
-        if (executeNow.isNow)
-            BackgroundJob.Schedule(() => RequestAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
-
-        return GetBaseResult(CodeMessage._99, Mapper.Map<WebHookResponse>(webHook));
-    }
-
-    #region Private work
-
-    public async Task RequestAsync(Models.WebHook request, CancellationToken token)
-    {
-        bool isSuccess = await customHttpClient.SendAsync(request, token);
-
-        // Save time event
-        var webHook = await Context.WebHooks.SingleAsync(x => x.Id == request.Id);
         webHook.TimeEvents = new HashSet<Models.TimeEvent>()
         {
             new()
             {
-                ProcessType = isSuccess ? ProcessType.Success : ProcessType.Fail,
+                ProcessType = ProcessType.Init,
                 TimeStampUtc = DateTime.UtcNow,
             }
         };
-        await Context.SaveChangesAsync();
+        await Context.WebHooks.AddAsync(webHook, token);
+
+        // Classification job
+        var executeNow = GetExecutionLevel(request.TriggerDatetimeUtc, DateTime.UtcNow);
+
+        if (executeNow.level == ExecutionLevel.Now)
+            await RequestNowAsync(webHook, token);
+
+        if (executeNow.level == ExecutionLevel.Soon)
+        {
+            await Context.SaveChangesAsync(token);
+            webHook.TimeEvents = null!; // Avoid circle loop when json-serialization
+            BackgroundJob.Schedule(() => RequestSoonAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
+        }
+
+        return GetBaseResult(CodeMessage._99, Mapper.Map<WebHookResponse>(webHook));
     }
 
     /// <summary>
@@ -52,18 +48,51 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
     /// <param name="triggerDatetimeUtc"></param>
     /// <param name="utcNow"></param>
     /// <returns></returns>
-    private (bool isNow, int seconds) IsExecuteNow(DateTime triggerDatetimeUtc, DateTime utcNow)
+    public (ExecutionLevel level, int seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow)
     {
         var condition = triggerDatetimeUtc - utcNow;
-        int seconds = condition.TotalSeconds < 0 ? 0 : (int)condition.TotalSeconds;
 
-        if (condition.TotalHours < 1)
-            return (true, seconds);
+        if (condition.TotalSeconds <= 15)
+            return (ExecutionLevel.Now, 0);
+        if (condition.TotalHours <= 1)
+            return (ExecutionLevel.Soon, (int)condition.TotalSeconds);
 
-        return (false, 0);
+        return (ExecutionLevel.Later, 0);
     }
 
-    #endregion
+    public async Task RequestNowAsync(Models.WebHook request, CancellationToken token)
+    {
+        var level = await customHttpClient.SendAsync(request, token);
+
+        request.IsDone = true;
+        request.TimeEvents.Add(
+            new()
+            {
+                ProcessType = level,
+                TimeStampUtc = DateTime.UtcNow,
+            }
+        );
+
+        await Context.SaveChangesAsync(token);
+    }
+
+    public async Task RequestSoonAsync(Models.WebHook request, CancellationToken token)
+    {
+        var level = await customHttpClient.SendAsync(request, token);
+
+        request.IsDone = true;
+        request.TimeEvents = new HashSet<Models.TimeEvent>()
+        {
+            new()
+            {
+                ProcessType = level,
+                TimeStampUtc = DateTime.UtcNow,
+            }
+        };
+
+        Context.WebHooks.Update(request);
+        await Context.SaveChangesAsync(token);
+    }
 
     #endregion
 }

@@ -19,7 +19,7 @@ public sealed class CustomHttpClient(
 
     #region Method
 
-    public async Task<bool> SendAsync(Models.WebHook request, CancellationToken cancellationToken)
+    public async Task<ProcessType> SendAsync(Models.WebHook request, CancellationToken cancellationToken)
     {
         var log = GetLog(request);
 
@@ -41,8 +41,12 @@ public sealed class CustomHttpClient(
             await RetryRequestAsync(request, task, cancellationToken);
 
             SetLogResponse(log, task.Result);
+            
+            // Process result
+            if (task.Result.IsSuccessStatusCode)
+                return ProcessType.Success;
 
-            return true;
+            return ProcessType.Fail;
         }
         catch (Exception ex)
         {
@@ -50,7 +54,7 @@ public sealed class CustomHttpClient(
             log.ExceptionMessage = ex.Message;
             log.ExceptionStackTrace = ex.StackTrace;
 
-            return false;
+            return ProcessType.Fail;
         }
         finally
         {
@@ -120,7 +124,7 @@ public sealed class CustomHttpClient(
                         .Handle<Exception>()
                         .HandleResult(static result =>
                         {
-                            Serilog.Log.Information(result.ToString());
+                            Log.Information(result.ToString());
                             return !result.IsSuccessStatusCode;
                         }),
                     Delay = pauseBetweenFailures,

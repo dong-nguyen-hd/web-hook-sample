@@ -1,3 +1,5 @@
+using WebHookSample.Resources.Enums;
+
 namespace WebHookSample.Domain.Services;
 
 public interface ICustomHttpClient
@@ -8,5 +10,5 @@ public interface ICustomHttpClient
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> SendAsync(Models.WebHook request, CancellationToken cancellationToken);
+    Task<ProcessType> SendAsync(Models.WebHook request, CancellationToken cancellationToken);
 }

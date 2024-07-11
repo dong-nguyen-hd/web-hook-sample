@@ -1,5 +1,6 @@
 using WebHookSample.Resources.DTOs.WebHook.Request;
 using WebHookSample.Resources.DTOs.WebHook.Response;
+using WebHookSample.Resources.Enums;
 
 namespace WebHookSample.Domain.Services;
 
@@ -14,10 +15,14 @@ public interface IWebHookService
     Task<BaseResult<WebHookResponse>> CreateAsync(CreateWebHookRequest request, CancellationToken token);
 
     /// <summary>
-    /// Role: request to 3th
+    /// Role: the classification of webhook can be performed immediately
     /// </summary>
-    /// <param name="request"></param>
-    /// <param name="token"></param>
+    /// <param name="triggerDatetimeUtc"></param>
+    /// <param name="utcNow"></param>
     /// <returns></returns>
-    Task RequestAsync(Models.WebHook request, CancellationToken token);
+    (ExecutionLevel level, int seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow);
+
+    Task RequestNowAsync(Models.WebHook request, CancellationToken token);
+
+    Task RequestSoonAsync(Models.WebHook request, CancellationToken token);
 }

@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using WebHookSample.Domain.Models.ToJson;
 
 namespace WebHookSample.Domain.Context;
 

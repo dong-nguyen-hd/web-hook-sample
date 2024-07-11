@@ -1,5 +1,4 @@
 ﻿using Microsoft.OpenApi.Models;
-using Microsoft.VisualBasic;
 
 namespace WebHookSample.Extensions.AddConfig;
 
