@@ -11,7 +11,7 @@ public class CreateWebHookValidator : AbstractValidator<CreateWebHookRequest>
         RuleFor(x => x.Uri).NotEmpty().NotNull().Must(IsUri);
         RuleFor(x => x.Payload).Must(IsJson).When(x => !string.IsNullOrEmpty(x.Payload));
         RuleFor(x => x.Headers)
-            .Must(x => x.TrueForAll(y => !string.IsNullOrEmpty(y.Key)))
+            .Must(x => x!.TrueForAll(y => !string.IsNullOrEmpty(y.Key)))
             .When(x => x.Headers != null && x.Headers.Count > 0);
         RuleFor(x => x.HttpMethod).Must(x => Enum.IsDefined(typeof(HttpMethod), x));
         RuleFor(x => x.NumberRetry).Must(x => x >= 0 && x < 4);
