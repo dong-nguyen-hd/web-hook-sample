@@ -34,10 +34,10 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
 
         if (executeNow.level == ExecutionLevel.Soon)
         {
-            webHook.Level = ExecutionLevel.Later;
+            webHook.Level = ExecutionLevel.Soon;
             await Context.SaveChangesAsync(token);
-            //webHook.TimeEvents = null!; // Avoid circle loop when json-serialization
-            //BackgroundJob.Schedule(() => RequestSoonAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
+            webHook.TimeEvents = null!; // Avoid circle loop when json-serialization
+            BackgroundJob.Schedule(() => RequestSoonAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
         }
 
         if (executeNow.level == ExecutionLevel.Later)

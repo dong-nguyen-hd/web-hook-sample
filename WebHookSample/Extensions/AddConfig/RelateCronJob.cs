@@ -14,6 +14,12 @@ public static class RelateCronJob
             c.TimeZoneInfo = TZConvert.GetTimeZoneInfo(SystemConstant.VietnamTimeZoneId);
             c.CronExpression = @"*/5 * * * *"; // Every 5th minute
         });
+        
+        services.AddCronJob<DeleteExpiredJob>(c =>
+        {
+            c.TimeZoneInfo = TZConvert.GetTimeZoneInfo(SystemConstant.VietnamTimeZoneId);
+            c.CronExpression = @"0 3 * * *"; // Every 3h AM
+        });
     }
 
     #region Private work
