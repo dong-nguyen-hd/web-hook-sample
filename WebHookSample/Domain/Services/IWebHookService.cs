@@ -20,7 +20,7 @@ public interface IWebHookService
     /// <param name="triggerDatetimeUtc"></param>
     /// <param name="utcNow"></param>
     /// <returns></returns>
-    (ExecutionLevel level, int seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow);
+    (ExecutionLevel level, double seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow);
 
     Task RequestSoonAsync(Models.WebHook request, CancellationToken token);
 }

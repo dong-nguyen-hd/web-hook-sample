@@ -12,7 +12,7 @@ public static class RelateCronJob
         services.AddCronJob<ProcessRequestLaterJob>(c =>
         {
             c.TimeZoneInfo = TZConvert.GetTimeZoneInfo(SystemConstant.VietnamTimeZoneId);
-            c.CronExpression = @"* * * * *"; // Every 3h20m AM: 20 3 * * *
+            c.CronExpression = @"* * * * *"; // Every 30m
         });
     }
 

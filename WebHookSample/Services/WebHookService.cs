@@ -34,10 +34,10 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
 
         if (executeNow.level == ExecutionLevel.Soon)
         {
-            webHook.Level = ExecutionLevel.Soon;
+            webHook.Level = ExecutionLevel.Later;
             await Context.SaveChangesAsync(token);
-            webHook.TimeEvents = null!; // Avoid circle loop when json-serialization
-            BackgroundJob.Schedule(() => RequestSoonAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
+            //webHook.TimeEvents = null!; // Avoid circle loop when json-serialization
+            //BackgroundJob.Schedule(() => RequestSoonAsync(webHook, token), TimeSpan.FromSeconds(executeNow.seconds));
         }
 
         if (executeNow.level == ExecutionLevel.Later)
@@ -49,14 +49,14 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         return GetBaseResult(CodeMessage._99, Mapper.Map<WebHookResponse>(webHook));
     }
 
-    public (ExecutionLevel level, int seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow)
+    public (ExecutionLevel level, double seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow)
     {
         var condition = triggerDatetimeUtc - utcNow;
 
         if (condition.TotalSeconds <= 15)
             return (ExecutionLevel.Now, 0);
         if (condition.TotalHours <= 1)
-            return (ExecutionLevel.Soon, (int)condition.TotalSeconds);
+            return (ExecutionLevel.Soon, condition.TotalSeconds);
 
         return (ExecutionLevel.Later, 0);
     }
@@ -73,6 +73,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
             WebHookId = request.Id
         };
 
+        Context.WebHooks.Update(request);
         await Context.TimeEvents.AddAsync(timeEvent, token);
         await Context.SaveChangesAsync(token);
     }
