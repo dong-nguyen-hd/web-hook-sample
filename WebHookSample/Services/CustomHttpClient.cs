@@ -33,7 +33,7 @@ public sealed class CustomHttpClient(
             HttpRequestMessage httpRequest = new()
             {
                 Method = MappingHttpMethod(request),
-                RequestUri = new Uri(request.Uri),
+                RequestUri = request.Uri,
                 Content = new StringContent(request.Payload ?? string.Empty, Encoding.UTF8, MimeType.JSON),
             };
 
@@ -168,8 +168,6 @@ public sealed class CustomHttpClient(
     /// <returns></returns>
     private Models.Log GetLog(Models.WebHook request)
     {
-        Uri uri = new Uri(request.Uri);
-
         Models.Log temp = new()
         {
             Node = SystemInformation.Node,
@@ -178,11 +176,11 @@ public sealed class CustomHttpClient(
             LogType = LogType.ThirdPartyLog,
             RequestMethod = request.HttpMethod.ToString(),
             RequestDatetimeUtc = DateTime.UtcNow,
-            RequestPath = uri.AbsolutePath,
-            RequestQuery = uri.Query,
-            RequestHost = uri.Host,
-            RequestScheme = uri.Scheme,
-            RequestQueries = uri.Query.FormatQueries()
+            RequestPath = request.Uri.AbsolutePath,
+            RequestQuery = request.Uri.Query,
+            RequestHost = request.Uri.Host,
+            RequestScheme = request.Uri.Scheme,
+            RequestQueries = request.Uri.Query.FormatQueries()
         };
 
         return temp;

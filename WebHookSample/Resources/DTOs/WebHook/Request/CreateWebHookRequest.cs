@@ -5,7 +5,7 @@ namespace WebHookSample.Resources.DTOs.WebHook.Request;
 
 public sealed class CreateWebHookRequest
 {
-    public string Uri { get; set; }
+    public Uri Uri { get; set; }
     [SensitiveData] public string? Payload { get; set; }
     [SensitiveData] public List<Header>? Headers { get; set; }
     public HttpMethod HttpMethod { get; set; }

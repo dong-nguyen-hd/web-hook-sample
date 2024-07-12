@@ -1,4 +1,6 @@
 using AutoMapper;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using WebHookSample.Controllers.Config;
@@ -17,8 +19,12 @@ public sealed partial class WebHookController(IWebHookService webHookService, IM
     [ResponseCache(CacheProfileName = CustomCacheProfile.NoCache)]
     [ProducesResponseType(typeof(BaseResult<WebHookResponse>), 200)]
     [SwaggerOperation(summary: "Create web hook")]
-    public async Task<IActionResult> CreateAsync([FromBody] CreateWebHookRequest request, CancellationToken token)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateWebHookRequest request, [FromServices] IValidator<CreateWebHookRequest> validator, CancellationToken token)
     {
+        var validate = await validator.ValidateAsync(request, token);
+        if (!validate.IsValid)
+            return ProduceErrorResponse(validate, this.ModelState);
+
         var result = await webHookService.CreateAsync(request, token);
         return Ok(result);
     }

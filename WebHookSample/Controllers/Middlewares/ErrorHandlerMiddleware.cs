@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 public sealed class ErrorHandlerMiddleware(RequestDelegate next)
 {
     #region Method
+
     public async Task Invoke(HttpContext context)
     {
         try
@@ -26,7 +27,10 @@ public sealed class ErrorHandlerMiddleware(RequestDelegate next)
                     break;
                 default:
                     // unhandled error
-                    result = new(CodeMessage._100);
+                    if (SystemGlobal.IsDebug)
+                        result = new(CodeMessage._100, error.Message);
+                    else
+                        result = new(CodeMessage._100);
                     break;
             }
 
@@ -35,5 +39,6 @@ public sealed class ErrorHandlerMiddleware(RequestDelegate next)
             throw;
         }
     }
+
     #endregion
 }
