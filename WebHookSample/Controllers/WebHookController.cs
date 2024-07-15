@@ -1,6 +1,5 @@
 using AutoMapper;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using WebHookSample.Controllers.Config;
@@ -11,7 +10,7 @@ using WebHookSample.Resources.DTOs.WebHook.Response;
 namespace WebHookSample.Controllers;
 
 [Route("api/v1/web-hook")]
-public sealed partial class WebHookController(IWebHookService webHookService, IMapper mapper) : ParentController(mapper)
+public sealed class WebHookController(IWebHookService webHookService, IMapper mapper) : ParentController(mapper)
 {
     #region Action
 

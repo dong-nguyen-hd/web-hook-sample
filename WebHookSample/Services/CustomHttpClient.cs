@@ -41,7 +41,7 @@ public sealed class CustomHttpClient(
             await RetryRequestAsync(request, task, cancellationToken);
 
             SetLogResponse(log, task.Result);
-            
+
             // Process result
             if (task.Result.IsSuccessStatusCode)
                 return ProcessType.Success;
@@ -50,10 +50,7 @@ public sealed class CustomHttpClient(
         }
         catch (Exception ex)
         {
-            log.HasException = true;
-            log.ExceptionMessage = ex.Message;
-            log.ExceptionStackTrace = ex.StackTrace;
-
+            SetLogException(log, ex);
             return ProcessType.Fail;
         }
         finally
@@ -145,10 +142,11 @@ public sealed class CustomHttpClient(
     /// <param name="log"></param>
     private void SetHeader(HttpClient client, Models.WebHook webHook, Models.Log log)
     {
-        Dictionary<string, string> headers = new();
-
         // Set other header
         if (webHook.Headers is not null and { Count: > 0 })
+        {
+            Dictionary<string, string> headers = new();
+
             foreach (var header in webHook.Headers)
             {
                 if (string.IsNullOrEmpty(header.Key))
@@ -158,7 +156,8 @@ public sealed class CustomHttpClient(
                 headers.TryAdd(header.Key, header.Value ?? string.Empty);
             }
 
-        log.RequestHeaders = headers;
+            log.RequestHeaders = headers;
+        }
     }
 
     /// <summary>
@@ -207,6 +206,18 @@ public sealed class CustomHttpClient(
 
             return temp;
         }
+    }
+
+    /// <summary>
+    /// Role: assign exception to log
+    /// </summary>
+    /// <param name="log"></param>
+    /// <param name="ex"></param>
+    private void SetLogException(Models.Log log, Exception ex)
+    {
+        log.HasException = true;
+        log.ExceptionMessage = ex.Message;
+        log.ExceptionStackTrace = ex.StackTrace;
     }
 
     #endregion
