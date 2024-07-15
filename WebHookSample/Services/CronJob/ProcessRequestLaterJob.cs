@@ -58,14 +58,16 @@ public sealed class ProcessRequestLaterJob : CronJobService
 
         // Add webHook job to "soon"
         if (webHooks.Count <= 0) return;
+        Parallel.ForEach(webHooks, webHook => webHook.Level = ExecutionLevel.Soon);
+
+        // Webhook implements optimistic concurrency
+        await context.SaveChangesAsync(cancellationToken);
+        
         Parallel.ForEach(webHooks, webHook =>
         {
-            webHook.Level = ExecutionLevel.Soon;
             var executeNow = webHookService.GetExecutionLevel(webHook.TriggerDatetimeUtc, utcNow);
             BackgroundJob.Schedule(() => webHookService.RequestSoonAsync(webHook, cancellationToken), TimeSpan.FromSeconds(executeNow.seconds));
         });
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     #endregion

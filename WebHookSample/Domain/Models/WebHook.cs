@@ -13,6 +13,7 @@ public sealed class WebHook
     public bool IsDone { get; set; }
     public ExecutionLevel Level { get; set; }
     public bool EnableVerifyTls { get; set; }
+    public uint Version { get; set; }
     public DateTime CreatedDatetimeUtc { get; set; }
     public DateTime TriggerDatetimeUtc { get; set; }
     public List<Header> Headers { get; set; }

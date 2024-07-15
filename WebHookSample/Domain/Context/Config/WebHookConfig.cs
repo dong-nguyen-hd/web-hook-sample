@@ -13,6 +13,7 @@ public sealed class WebHookConfig : IEntityTypeConfiguration<Models.WebHook>
         entity.ToTable("tbl_web_hook");
 
         entity.HasKey(x => x.Id);
+        entity.Property(x => x.Version).IsRowVersion();
 
         entity.Property(x => x.CreatedDatetimeUtc).HasColumnType("timestamp without time zone");
         entity.Property(x => x.TriggerDatetimeUtc).HasColumnType("timestamp without time zone");
