@@ -10,7 +10,7 @@ using WebHookSample.Resources.DTOs.WebHook.Response;
 namespace WebHookSample.Controllers;
 
 [Route("api/v1/web-hook")]
-public sealed class WebHookController(IWebHookService webHookService, IMapper mapper) : ParentController(mapper)
+public sealed partial class WebHookController(IWebHookService webHookService, IMapper mapper) : ParentController(mapper)
 {
     #region Action
 

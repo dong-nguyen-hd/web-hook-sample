@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using WebHookSample.Controllers.Filters;
 using WebHookSample.Controllers.Middlewares;
 using WebHookSample.Domain.Services;
 using WebHookSample.Resources.DTOs.WebHook.Mapping;
@@ -20,5 +21,11 @@ public static class RelateServices
         services.AddAutoMapper(typeof(ResourceToModelProfile));
         
         services.AddValidatorsFromAssemblyContaining<CreateWebHookValidator>();
+        
+        // Add Filter
+        services.AddMvc(options =>
+        {
+            options.Filters.Add(new LoggerActionFilter());
+        });
     }
 }

@@ -1,4 +1,5 @@
 using WebHookSample.Domain.Models.ToJson;
+using WebHookSample.Resources.Attribute;
 using HttpMethod = WebHookSample.Resources.Enums.HttpMethod;
 
 namespace WebHookSample.Resources.DTOs.WebHook.Request;

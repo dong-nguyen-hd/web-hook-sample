@@ -1,41 +1,16 @@
-﻿using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Compliance.Redaction;
+﻿using System.Collections;
+using System.Reflection;
+using System.Reflection.Metadata;
+using Microsoft.VisualBasic;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Filters;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.Elasticsearch;
+using WebHookSample.Resources.Attribute;
 using ILogger = Serilog.ILogger;
 
 namespace WebHookSample.Extensions.AddConfig;
-
-#region Redaction declare
-
-public static class Taxonomy
-{
-    public static string TaxonomyName => typeof(Taxonomy).FullName!;
-
-    public static DataClassification SensitiveData => new(TaxonomyName, nameof(SensitiveData));
-}
-
-public class SensitiveDataAttribute() : DataClassificationAttribute(Taxonomy.SensitiveData);
-
-public class MyErasingRedactor : Redactor
-{
-    private const string ErasedValue = "*** Masked ***"; // Use this value for sensitive data
-
-    public override int GetRedactedLength(ReadOnlySpan<char> input)
-        => ErasedValue.Length;
-
-    public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
-    {
-        // The base class ensures destination has sufficient capacity
-        ErasedValue.CopyTo(destination);
-        return ErasedValue.Length;
-    }
-}
-
-#endregion
 
 public static class RelateLogConfig
 {
@@ -91,13 +66,112 @@ public static class RelateLogConfig
         Log.Logger = logCfg.CreateLogger();
 
         #endregion
-
-        #region Config Redaction
-
-        // services.AddRedaction(x => { x.SetRedactor<MyErasingRedactor>(new DataClassificationSet(Taxonomy.SensitiveData)); });
-        //
-        // services.AddSerilog((sp, loggerConfiguration) => { loggerConfiguration.Destructure.WithRedaction(sp.GetRequiredService<IRedactorProvider>()); });
-
-        #endregion
     }
+
+    #region My Redaction
+
+    private const string _relateObjectContext = "MyRedactionContext";
+
+    public static string? MaskSensitiveData(this object source)
+    {
+        try
+        {
+            if (!IsValidType(source))
+                return string.Empty;
+
+            return MaskInner(source).MySerialize();
+        }
+        catch (Exception ex)
+        {
+            _relateObjectContext.LogWithContext().Error(ex.Message, ex);
+
+            return string.Empty;
+        }
+    }
+
+    private static bool IsValidType(object? source)
+    {
+        if (source is null)
+            return false;
+
+        var @namespace = source.GetType().Namespace;
+        if (@namespace is null || @namespace.StartsWith("System") || source.GetType().IsEnum)
+            return false;
+
+        return true;
+    }
+
+    private static object? MaskInner(object? obj)
+    {
+        var visited = new Dictionary<object, object>();
+
+        return Work(obj);
+
+        object? Work(object? inst)
+        {
+            if (inst is null)
+                return null;
+
+            if (visited.TryGetValue(inst, out var prev))
+                return prev;
+
+            if (inst is IEnumerable)
+            {
+                if (inst.GetType().GetCustomAttribute<SensitiveDataAttribute>() != null)
+                    return Enumerable.Empty<object>();
+
+                if (inst is IList castList)
+                {
+                    if (castList is null || castList.Count == 0)
+                        return inst;
+
+                    var castListCount = castList.Count;
+                    for (int i = 0; i < castListCount; i++)
+                    {
+                        if (castList[i] is null)
+                            continue;
+
+                        var itemType = castList[i].GetType();
+
+                        if (itemType.IsValueType || itemType == typeof(string))
+                            return inst;
+
+                        castList[i] = Work(castList[i]);
+                    }
+
+                    return castList;
+                }
+
+                return inst;
+            }
+
+            var type = inst.GetType();
+            var constructor = type.GetConstructor(Type.EmptyTypes);
+
+            if (constructor == null)
+                return inst;
+
+            var result = visited[inst] = Activator.CreateInstance(type);
+
+            var properties = type.GetProperties();
+            foreach (var property in properties)
+            {
+                if (property.GetSetMethod() == null)
+                    continue;
+
+                var value = property.GetValue(inst);
+
+                if (property.GetCustomAttribute<SensitiveDataAttribute>() != null && property.PropertyType == typeof(string))
+                    property.SetValue(result, SystemGlobal.Masked);
+                else if (property.PropertyType.IsValueType || property.PropertyType == typeof(string))
+                    property.SetValue(result, value);
+                else
+                    property.SetValue(result, Work(value));
+            }
+
+            return result;
+        }
+    }
+
+    #endregion
 }

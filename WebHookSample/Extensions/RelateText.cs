@@ -29,7 +29,8 @@ public static class RelateText
         string.IsNullOrEmpty(text) ? string.Empty : Regex.Replace(text.Trim(), @"\s+", "");
 
     #region MySerialize
-    private static JsonSerializerOptions _opt = new JsonSerializerOptions()
+
+    private static JsonSerializerOptions _opt = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
@@ -47,5 +48,6 @@ public static class RelateText
 
         return JsonSerializer.Serialize(source, _opt);
     }
+
     #endregion
 }
