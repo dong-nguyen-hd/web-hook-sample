@@ -1,7 +1,5 @@
 ﻿using System.Collections;
 using System.Reflection;
-using System.Reflection.Metadata;
-using Microsoft.VisualBasic;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Filters;
