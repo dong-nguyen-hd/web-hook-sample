@@ -117,9 +117,6 @@ public static class RelateLogConfig
 
             if (inst is IEnumerable)
             {
-                if (inst.GetType().GetCustomAttribute<SensitiveDataAttribute>() != null)
-                    return Enumerable.Empty<object>();
-
                 if (inst is IList castList)
                 {
                     if (castList is null || castList.Count == 0)
@@ -161,8 +158,15 @@ public static class RelateLogConfig
 
                 var value = property.GetValue(inst);
 
-                if (property.GetCustomAttribute<SensitiveDataAttribute>() != null && property.PropertyType == typeof(string))
-                    property.SetValue(result, SystemGlobal.Masked);
+                if (property.GetCustomAttribute<SensitiveDataAttribute>() != null)
+                {
+                    if (property.PropertyType == typeof(string))
+                        property.SetValue(result, SystemGlobal.Masked);
+                    else if (property.PropertyType.IsValueType)
+                        property.SetValue(result, 0);
+                    else if (property.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
+                        property.SetValue(result, null);
+                }
                 else if (property.PropertyType.IsValueType || property.PropertyType == typeof(string))
                     property.SetValue(result, value);
                 else
