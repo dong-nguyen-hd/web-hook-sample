@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "http-dev-env": {
+    "dev-env": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
@@ -10,7 +10,7 @@
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5000"
     },
-    "http-prod-env": {
+    "prod-env": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "ready",
