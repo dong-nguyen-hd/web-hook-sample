@@ -5,9 +5,10 @@ import { Counter } from 'k6/metrics';
 // Define custom metrics
 const myFailingCounter = new Counter('my_failing_counter');
 
-const startDate = new Date(2024, 6, 16);
-const endDate = new Date(2024, 6, 18);
 const myHost = 'http://localhost:5000';
+const currentDate = new Date();
+const startDate = getDatePlusMinusDays(currentDate, 0);
+const endDate = getDatePlusMinusDays(currentDate, 1);
 
 export let options = {
     InsecureSkipTLSVerify: true,
@@ -23,6 +24,13 @@ export let options = {
         http_req_duration: ['p(95)<500'], // 95% of requests should be below 500ms
     },
 };
+
+// Function to add or subtract days
+function getDatePlusMinusDays(date, days) {
+    let result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
 
 function getRandomDate(startDate, endDate) {
     // Convert the dates to timestamps

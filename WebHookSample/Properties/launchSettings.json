@@ -13,7 +13,7 @@
     "http-prod-env": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": "ready",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
       },
