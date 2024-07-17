@@ -119,11 +119,7 @@ public sealed class CustomHttpClient(
                 {
                     ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                         .Handle<Exception>()
-                        .HandleResult(static result =>
-                        {
-                            Log.Information(result.ToString());
-                            return !result.IsSuccessStatusCode;
-                        }),
+                        .HandleResult(static result => !result.IsSuccessStatusCode),
                     Delay = pauseBetweenFailures,
                     MaxRetryAttempts = maxRetryAttempts,
                     BackoffType = DelayBackoffType.Constant
@@ -173,7 +169,7 @@ public sealed class CustomHttpClient(
             TraceId = _httpContext != null ? _httpContext.TraceIdentifier : "<none>",
             WebHookId = request.Id,
             LogType = LogType.ThirdPartyLog,
-            RequestMethod = request.HttpMethod.ToString(),
+            RequestMethod = nameof(request.HttpMethod),
             RequestDatetimeUtc = DateTime.UtcNow,
             RequestPath = request.Uri.AbsolutePath,
             RequestQuery = request.Uri.Query,
