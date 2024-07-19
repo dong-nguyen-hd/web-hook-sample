@@ -32,6 +32,9 @@ public static class RelateLogConfig
             .Enrich.WithEnvironmentUserName()
             .Enrich.WithProperty("ApplicationName", SystemInformation.ApplicationName);
 
+        if (SystemGlobal.IsDebug) // Enable log query EF Core for dev env
+            logCfg.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information);
+
         if (SerilogConfig.EnableConsoleLog)
             logCfg.WriteTo.Console();
         else
