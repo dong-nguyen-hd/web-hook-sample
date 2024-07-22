@@ -10,9 +10,9 @@ public interface IWebHookService
     /// Role: create webhook
     /// </summary>
     /// <param name="request"></param>
-    /// <param name="token"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<BaseResult<WebHookResponse>> CreateAsync(CreateWebHookRequest request, CancellationToken token);
+    Task<BaseResult<WebHookResponse>> CreateAsync(CreateWebHookRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Role: the classification of webhook can be performed immediately
@@ -22,5 +22,5 @@ public interface IWebHookService
     /// <returns></returns>
     (ExecutionLevel level, double seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow);
 
-    Task RequestSoonAsync(Models.WebHook request, CancellationToken token);
+    Task RequestSoonAsync(Models.WebHook request, CancellationToken cancellationToken = default);
 }
