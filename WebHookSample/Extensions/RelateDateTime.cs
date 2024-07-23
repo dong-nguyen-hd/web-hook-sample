@@ -10,7 +10,7 @@ public static class RelateDateTime
     /// <param name="data"></param>
     /// <returns></returns>
     public static string ConvertToSystemFormat(this DateTime data)
-        => data.ToString("yyyy-MM-ddThh:mm:ss.fffZ");
+        => data.ToString(SystemConstant.SystemFormatDatetime);
 
     /// <summary>
     /// Role: Convert UTC to +7:00
@@ -19,9 +19,7 @@ public static class RelateDateTime
     /// <returns></returns>
     public static DateTime ConvertUtcToVietnamTz(this DateTime utc)
     {
-        var windowsTz = "SE Asia Standard Time"; // +7:00
-
-        TimeZoneInfo localTz = TZConvert.GetTimeZoneInfo(windowsTz);
+        TimeZoneInfo localTz = TZConvert.GetTimeZoneInfo(SystemConstant.VietnamTimeZoneId);
         return TimeZoneInfo.ConvertTimeFromUtc(utc, localTz);
     }
 
@@ -32,9 +30,7 @@ public static class RelateDateTime
     /// <returns></returns>
     public static DateTime ConvertVietnamTzToUtc(this DateTime localTime)
     {
-        var windowsTz = "SE Asia Standard Time"; // +7:00
-
-        TimeZoneInfo localTz = TZConvert.GetTimeZoneInfo(windowsTz);
+        TimeZoneInfo localTz = TZConvert.GetTimeZoneInfo(SystemConstant.VietnamTimeZoneId);
         return TimeZoneInfo.ConvertTimeToUtc(localTime, localTz);
     }
 }

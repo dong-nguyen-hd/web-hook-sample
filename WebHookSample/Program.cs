@@ -6,6 +6,7 @@ using StackExchange.Redis;
 using WebHookSample.Controllers.Config;
 using WebHookSample.Controllers.Middlewares;
 using WebHookSample.Domain.Context;
+using WebHookSample.Extensions.JsonConverter;
 
 const string _hostingSourceContext = "Microsoft.Hosting.Lifetime";
 
@@ -41,6 +42,10 @@ try
     {
         // Adds a custom error response factory when Model-State is invalid
         options.InvalidModelStateResponseFactory = InvalidResponseFactory.ProduceErrorResponse;
+    }).AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Converters.Add(new MyDateTimeConverter());
     });
 
     // Add redis / mem cache
