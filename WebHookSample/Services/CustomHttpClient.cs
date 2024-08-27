@@ -36,14 +36,11 @@ public sealed class CustomHttpClient(
                 RequestUri = request.Uri,
                 Content = new StringContent(request.Payload ?? string.Empty, Encoding.UTF8, MimeType.JSON),
             };
-
-            var task = client.SendAsync(httpRequest, cancellationToken);
-            await RetryRequestAsync(request, task, cancellationToken);
-
-            SetLogResponse(log, task.Result);
+            var response = await RetryRequestAsync(request, client, httpRequest, cancellationToken);
+            SetLogResponse(log, response);
 
             // Process result
-            if (task.Result.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
                 return ProcessType.Success;
 
             return ProcessType.Fail;
@@ -100,17 +97,14 @@ public sealed class CustomHttpClient(
     /// Role: retry request mechanism
     /// </summary>
     /// <param name="webHook"></param>
-    /// <param name="task"></param>
+    /// <param name="httpClient"></param>
+    /// <param name="httpRequest"></param>
     /// <param name="cancellationToken"></param>
-    private async Task RetryRequestAsync(Models.WebHook webHook, Task<HttpResponseMessage> task, CancellationToken cancellationToken)
+    /// <returns></returns>
+    private async Task<HttpResponseMessage> RetryRequestAsync(Models.WebHook webHook, HttpClient httpClient, HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
         var maxRetryAttempts = webHook.NumberRetry;
-
-        if (maxRetryAttempts == 0)
-        {
-            await task;
-        }
-        else
+        if (maxRetryAttempts != 0)
         {
             var pauseBetweenFailures = TimeSpan.FromSeconds(2);
 
@@ -126,8 +120,16 @@ public sealed class CustomHttpClient(
                 })
                 .Build();
 
-            await pipeline.ExecuteAsync(async token => await task, cancellationToken);
+            return await pipeline.ExecuteAsync(async token =>
+                await httpClient.SendAsync(new HttpRequestMessage()
+                {
+                    Method = httpRequest.Method,
+                    RequestUri = httpRequest.RequestUri,
+                    Content = httpRequest.Content
+                }, cancellationToken), cancellationToken);
         }
+
+        return await httpClient.SendAsync(httpRequest, cancellationToken);
     }
 
     /// <summary>
