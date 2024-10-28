@@ -5,9 +5,9 @@ using WebHookSample.Domain.Services;
 public sealed class LogService : ILogService
 {
     #region Method
-    public void Write<T>(T log) where T : class
+    public void Write<T>(T? log) where T : class
     {
-        var context = Log.ForContext("SourceContext", typeof(LogService).Name);
+        var context = Log.ForContext("SourceContext", nameof(LogService));
 
         if (log == null)
             context.Error("Error log null");

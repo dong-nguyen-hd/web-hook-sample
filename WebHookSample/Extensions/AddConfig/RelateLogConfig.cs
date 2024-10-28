@@ -5,7 +5,9 @@ using Serilog.Exceptions;
 using Serilog.Filters;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.Elasticsearch;
+using WebHookSample.Controllers.Middlewares;
 using WebHookSample.Resources.Attribute;
+using WebHookSample.Services.CronJob;
 using ILogger = Serilog.ILogger;
 
 namespace WebHookSample.Extensions.AddConfig;
@@ -41,7 +43,9 @@ public static class RelateLogConfig
         {
             // Log only important information
             logCfg.WriteTo.Logger(lc =>
-                lc.Filter.ByIncludingOnly(Matching.WithProperty<string>("SourceContext", p => p == "Microsoft.Hosting.Lifetime"))
+                lc.Filter.ByIncludingOnly(Matching.WithProperty<string>("SourceContext", p => p == "Microsoft.Hosting.Lifetime" ||
+                                                                                              p == CronJobService.JobContext ||
+                                                                                              p == ErrorHandlerMiddleware.ErrorHandlerMiddlewareContext))
                     .WriteTo.Console());
         }
 
@@ -73,12 +77,15 @@ public static class RelateLogConfig
 
     private const string _relateObjectContext = "MyRedactionContext";
 
-    public static string? MaskSensitiveData(this object source)
+    public static string? MaskSensitiveData(this object? source)
     {
         try
         {
-            if (!IsValidType(source))
+            if (source is null)
                 return string.Empty;
+            
+            if (!IsValidType(source))
+                return source.MySerialize();
 
             return MaskInner(source).MySerialize();
         }
@@ -90,11 +97,8 @@ public static class RelateLogConfig
         }
     }
 
-    private static bool IsValidType(object? source)
+    private static bool IsValidType(object source)
     {
-        if (source is null)
-            return false;
-
         var @namespace = source.GetType().Namespace;
         if (@namespace is null || @namespace.StartsWith("System") || source.GetType().IsEnum)
             return false;

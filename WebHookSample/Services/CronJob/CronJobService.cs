@@ -7,9 +7,10 @@ public abstract class CronJobService : IHostedService, IDisposable
 {
     #region Properties
 
-    private Timer _timer;
-    private readonly CronExpression _expression;
-    private readonly TimeZoneInfo _timeZoneInfo;
+    private Timer? _timer;
+    private readonly CronExpression? _expression;
+    private readonly TimeZoneInfo? _timeZoneInfo;
+    public const string JobContext = nameof(CronJobService);
 
     #endregion
 
@@ -27,7 +28,7 @@ public abstract class CronJobService : IHostedService, IDisposable
 
     public virtual async Task StartAsync(CancellationToken cancellationToken)
     {
-        Log.Information($"{this.GetType().Name} is starting.");
+        JobContext.LogWithContext().Information($"{this.GetType().Name} is starting.");
         await ScheduleJobAsync(cancellationToken);
     }
 
@@ -65,18 +66,24 @@ public abstract class CronJobService : IHostedService, IDisposable
         await Task.CompletedTask;
     }
 
-    public virtual async Task DoWorkAsync(CancellationToken cancellationToken)
+    protected virtual async Task DoWorkAsync(CancellationToken cancellationToken)
         => await Task.Delay(5000, cancellationToken); // Do the work in derive class
 
     public virtual async Task StopAsync(CancellationToken cancellationToken)
     {
-        Log.Information($"{this.GetType().Name} is stopping.");
+        JobContext.LogWithContext().Information($"{this.GetType().Name} is stopping.");
         _timer?.Stop();
         await Task.CompletedTask;
     }
 
     public virtual void Dispose()
-        => _timer?.Dispose();
+    {
+        if (_timer != null)
+        {
+            GC.SuppressFinalize(_timer);
+            _timer?.Dispose();
+        }
+    }
 
     #endregion
 }

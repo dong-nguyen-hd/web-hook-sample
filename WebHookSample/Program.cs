@@ -34,10 +34,11 @@ try
 
     #region Add services to the container.
 
+    builder.Services.ApplyTimeoutProfile();
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddControllers(opt =>
     {
-        opt.ApplyProfile(); // Add custom cache profile
+        opt.ApplyCacheProfile(); // Add custom cache profile
     }).ConfigureApiBehaviorOptions(options =>
     {
         // Adds a custom error response factory when Model-State is invalid
@@ -81,6 +82,7 @@ try
     builder.Services.RegisterCronJob();
 
     builder.Services.AddResponseCaching();
+    builder.Services.AddHealthCheck();
     builder.Services.AddCustomizeSwagger();
     builder.Services.AddEndpointsApiExplorer(); // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddSwaggerGen();
@@ -98,12 +100,12 @@ try
         }).UseSnakeCaseNamingConvention();
     });
 
+    builder.Services.AddResponseCompression(options => { options.EnableForHttps = true; });
     builder.Services.AddDependencyInjection(builder.Configuration);
     builder.Services.RegisterHttpClient(builder.Configuration);
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowAll",
-            builder => { builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
+        options.AddPolicy("AllowAll", x => { x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(); });
     });
 
     #endregion
@@ -111,21 +113,36 @@ try
     #region Configure the HTTP request pipeline.
 
     var app = builder.Build();
-    app.UseStaticFiles();
-    app.UseHangfireDashboard();
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        RequestPath = "/resources",
+        HttpsCompression = Microsoft.AspNetCore.Http.Features.HttpsCompressionMode.Compress,
+        OnPrepareResponse = (context) =>
+        {
+            var headers = context.Context.Response.GetTypedHeaders();
+            headers.CacheControl = new CacheControlHeaderValue
+            {
+                Public = true,
+                MaxAge = TimeSpan.FromHours(1)
+            };
+        }
+    });
 
     if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
+        app.UseHangfireDashboard();
     }
 
+    app.UseResponseCompression();
     app.UseSerilogRequestLogging();
     if (app.Environment.IsProduction())
         app.UseHttpsRedirection();
     app.UseCors("AllowAll");
     app.UseRouting();
     app.UseResponseCaching();
+    app.UseRequestTimeouts();
     app.UseMiddleware<LoggerMiddleware>();
     app.UseMiddleware<ErrorHandlerMiddleware>();
     app.Use((context, next) => // No-caching explicit
@@ -137,6 +154,7 @@ try
         };
         return next.Invoke();
     });
+    app.MapHealthCheck();
     app.MapControllers();
     app.Run();
 

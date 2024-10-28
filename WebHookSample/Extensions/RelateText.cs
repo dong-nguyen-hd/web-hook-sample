@@ -4,6 +4,18 @@ using System.Text.RegularExpressions;
 
 public static class RelateText
 {
+    #region GenId
+
+    private static readonly IdGenerator _genId = new(Random.Shared.Next(0, 1023));
+
+    /// <summary>
+    /// Chức năng: tạo id
+    /// </summary>
+    /// <returns></returns>
+    public static string GenId() => _genId.CreateId().ToString();
+
+    #endregion
+
     /// <summary>
     /// Chức năng: xoá các kí tự khoảng trắng bị lặp lại (2 kí tự space -> 1 kí tự space)
     /// </summary>
@@ -33,7 +45,22 @@ public static class RelateText
     private static JsonSerializerOptions _opt = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    /// <summary>
+    /// Chức năng: sử dụng Deserialize với CamelCase cho đồng bộ toàn hệ thống
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T? MyDeserialize<T>(this string? source)
+    {
+        if (string.IsNullOrEmpty(source))
+            return default;
+
+        return JsonSerializer.Deserialize<T>(source, _opt);
+    }
 
     /// <summary>
     /// Chức năng: sử dụng Serialize với CamelCase cho đồng bộ toàn hệ thống

@@ -4,7 +4,7 @@ using Resources.Enums;
 
 public sealed class Log
 {
-    public string Id { get; set; } = new IdGenerator(0).CreateId().ToString();
+    public string Id { get; set; } = RelateText.GenId();
     public string? Node { get; set; }
     public string? ClientIp { get; set; }
     public string? WebHookId { get; set; }

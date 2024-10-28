@@ -8,14 +8,14 @@ using WebHookSample.Resources.Enums;
 
 namespace WebHookSample.Services;
 
-public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomHttpClient customHttpClient) : BaseService(mapper, context), IWebHookService
+public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomHttpClient customHttpClient) : BaseService, IWebHookService
 {
     #region Method
 
     public async Task<BaseResult<WebHookResponse>> CreateAsync(CreateWebHookRequest request, CancellationToken cancellationToken = default)
     {
         // Save to DB
-        var webHook = Mapper.Map<Models.WebHook>(request);
+        var webHook = mapper.Map<Models.WebHook>(request);
         webHook.TimeEvents = new HashSet<Models.TimeEvent>()
         {
             new()
@@ -24,7 +24,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
                 TimeStampUtc = DateTime.UtcNow,
             }
         };
-        await Context.WebHooks.AddAsync(webHook, cancellationToken);
+        await context.WebHooks.AddAsync(webHook, cancellationToken);
 
         // Classification job
         var executeNow = GetExecutionLevel(request.TriggerDatetimeUtc, DateTime.UtcNow);
@@ -35,7 +35,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         if (executeNow.level == ExecutionLevel.Soon)
         {
             webHook.Level = ExecutionLevel.Soon;
-            await Context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
             webHook.TimeEvents = null!; // Avoid circle loop when json-serialization
             BackgroundJob.Schedule(() => RequestSoonAsync(webHook, cancellationToken), TimeSpan.FromSeconds(executeNow.seconds));
         }
@@ -43,10 +43,10 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
         if (executeNow.level == ExecutionLevel.Later)
         {
             webHook.Level = ExecutionLevel.Later;
-            await Context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
-        return GetBaseResult(CodeMessage._99, Mapper.Map<WebHookResponse>(webHook));
+        return GetBaseResult(CodeMessage._99, mapper.Map<WebHookResponse>(webHook));
     }
 
     public (ExecutionLevel level, double seconds) GetExecutionLevel(DateTime triggerDatetimeUtc, DateTime utcNow)
@@ -73,9 +73,9 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
             WebHookId = request.Id
         };
 
-        Context.WebHooks.Update(request);
-        await Context.TimeEvents.AddAsync(timeEvent, cancellationToken);
-        await Context.SaveChangesAsync(cancellationToken);
+        context.WebHooks.Update(request);
+        await context.TimeEvents.AddAsync(timeEvent, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     #region Private work
@@ -94,7 +94,7 @@ public sealed class WebHookService(IMapper mapper, CoreContext context, ICustomH
             }
         );
 
-        await Context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     #endregion

@@ -19,7 +19,7 @@ public sealed class CustomHttpClient(
 
     #region Method
 
-    public async Task<ProcessType> SendAsync(Models.WebHook request, CancellationToken cancellationToken)
+    public async Task<ProcessType> SendAsync(Models.WebHook request, CancellationToken cancellationToken = default)
     {
         var log = GetLog(request);
 

@@ -26,21 +26,49 @@ public sealed class ProcessRequestLaterJob : CronJobService
 
     #region Method
 
-    public override async Task DoWorkAsync(CancellationToken cancellationToken)
+    protected override async Task DoWorkAsync(CancellationToken cancellationToken)
     {
+        string jobId = string.Empty;
+
         try
         {
-            Log.Information($"{nameof(ProcessRequestLaterJob)} is working.");
+            await Task.Delay(Random.Shared.Next(1000, 9999), cancellationToken);
+            jobId = RelateText.GenId();
+            JobContext.LogWithContext().Information($"{nameof(ProcessRequestLaterJob)} ({jobId}) is working.");
 
             using var scope = _serviceProvider.CreateScope();
-            var webHookService = scope.ServiceProvider.GetRequiredService<IWebHookService>();
             var context = scope.ServiceProvider.GetRequiredService<CoreContext>();
 
-            await ProcessLaterJobAsync(webHookService, context, cancellationToken);
+            // Check if there is a previous job that has already executed this task.
+            var value = await context.CronJobFlags.FirstOrDefaultAsync(x => x.Name == $"{nameof(ProcessRequestLaterJob)}", cancellationToken);
+            if (value != null)
+            {
+                // Don't re-execute the task if it has already been performed within the past 2 minutes.
+                var utcNow = DateTime.UtcNow;
+                if (utcNow.Subtract(value.ExecuteDatetimeUtc).TotalSeconds <= (2 * 60))
+                {
+                    JobContext.LogWithContext().Information($"{nameof(ProcessRequestLaterJob)} ({jobId}) is cancel");
+                    return;
+                }
+
+                value.ExecuteDatetimeUtc = utcNow;
+                context.CronJobFlags.Update(value);
+                await context.SaveChangesAsync(cancellationToken);
+
+                var webHookService = scope.ServiceProvider.GetRequiredService<IWebHookService>();
+                await ProcessLaterJobAsync(webHookService, context, cancellationToken);
+            }
+            else
+            {
+                JobContext.LogWithContext().Information($"{nameof(ProcessRequestLaterJob)} ({jobId}) is cancel");
+            }
         }
         catch (Exception ex)
         {
-            Log.Error($"{nameof(ProcessRequestLaterJob)} fail: {ex.Message}", ex);
+            if (ex is DbUpdateConcurrencyException)
+                JobContext.LogWithContext().Information($"{nameof(ProcessRequestLaterJob)} ({jobId}) is cancel");
+            else
+                JobContext.LogWithContext().Error($"{nameof(ProcessRequestLaterJob)} ({jobId}) is fail: {ex.Message}", ex);
         }
     }
 
@@ -62,7 +90,7 @@ public sealed class ProcessRequestLaterJob : CronJobService
 
         // Webhook implements optimistic concurrency
         await context.SaveChangesAsync(cancellationToken);
-        
+
         Parallel.ForEach(webHooks, webHook =>
         {
             var executeNow = webHookService.GetExecutionLevel(webHook.TriggerDatetimeUtc, utcNow);

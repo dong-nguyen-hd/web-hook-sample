@@ -48,6 +48,12 @@ public abstract class ParentController : ControllerBase
             Message = message
         };
     }
+    
+    protected virtual IActionResult GetBaseResult<T>(int httpCode, T? data)
+    {
+        HttpContext.RequestAborted.ThrowIfCancellationRequested();
+        return StatusCode(httpCode, data);
+    }
 
     #endregion
 }

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using WebHookSample.Controllers.Config;
@@ -11,6 +12,7 @@ public sealed class AuthorController(IMapper mapper) : ParentController(mapper)
     #region Action
 
     [HttpGet("ready")]
+    [RequestTimeout(CustomTimeoutProfile.Over15S)]
     [ResponseCache(CacheProfileName = CustomCacheProfile.NoCache)]
     [ProducesResponseType(typeof(BaseResult<ReadyResponse>), 200)]
     [SwaggerOperation(summary: "Ready")]

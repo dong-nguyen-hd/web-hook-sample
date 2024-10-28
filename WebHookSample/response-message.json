@@ -1,7 +1,6 @@
 ﻿{
   "ResponseMessage": {
     "Values": {
-      // Base
       "99": "Success",
       "100": "Fail",
       "101": "Request Timeout"

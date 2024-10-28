@@ -8,13 +8,13 @@ public static class RelateCronJob
     public static void RegisterCronJob(this IServiceCollection services)
     {
         // Every minute: * * * * *
-        
+
         services.AddCronJob<ProcessRequestLaterJob>(c =>
         {
             c.TimeZoneInfo = TZConvert.GetTimeZoneInfo(SystemConstant.VietnamTimeZoneId);
-            c.CronExpression = @"*/5 * * * *"; // Every 5th minute
+            c.CronExpression = @"*/5 * * * *"; // Every 5th minutes
         });
-        
+
         services.AddCronJob<DeleteExpiredJob>(c =>
         {
             c.TimeZoneInfo = TZConvert.GetTimeZoneInfo(SystemConstant.VietnamTimeZoneId);
@@ -23,7 +23,7 @@ public static class RelateCronJob
     }
 
     #region Private work
-    
+
     private static void AddCronJob<T>(this IServiceCollection services, Action<IScheduleConfig<T>> options) where T : CronJobService
     {
         if (options == null)
@@ -45,20 +45,12 @@ public static class RelateCronJob
 
 public interface IScheduleConfig<T>
 {
-    #region Properties
-
-    string CronExpression { get; set; }
-    TimeZoneInfo TimeZoneInfo { get; set; }
-
-    #endregion
+    string? CronExpression { get; set; }
+    TimeZoneInfo? TimeZoneInfo { get; set; }
 }
 
 public sealed class ScheduleConfig<T> : IScheduleConfig<T>
 {
-    #region Properties
-
-    public string CronExpression { get; set; }
-    public TimeZoneInfo TimeZoneInfo { get; set; }
-
-    #endregion
+    public string? CronExpression { get; set; }
+    public TimeZoneInfo? TimeZoneInfo { get; set; }
 }

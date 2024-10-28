@@ -96,7 +96,7 @@ public sealed class LoggerMiddleware(RequestDelegate next)
 
     private void LogError(Models.Log log, Exception exception)
     {
-        Log.Error(exception, $"LogId ({log.Id}): {exception.Message}");
+        nameof(LoggerMiddleware).LogWithContext().Error(exception, $"Log-id ({log.Id}): {exception.Message}");
 
         log.HasException = true;
         log.ExceptionMessage = exception.Message;

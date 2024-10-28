@@ -10,5 +10,5 @@ public interface ICustomHttpClient
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ProcessType> SendAsync(Models.WebHook request, CancellationToken cancellationToken);
+    Task<ProcessType> SendAsync(Models.WebHook request, CancellationToken cancellationToken = default);
 }
